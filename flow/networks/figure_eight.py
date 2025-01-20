@@ -4,7 +4,7 @@ import numpy as np
 from numpy import pi, sin, cos, linspace
 
 from flow.core.params import InitialConfig
-from flow.core.params import TrafficLightParams
+from flow.core.params import TrafficLightParams  # TrafficLightParams 추가
 from flow.networks.base import Network
 
 ADDITIONAL_NET_PARAMS = {
@@ -34,26 +34,6 @@ class FigureEightNetwork(Network):
     * **resolution** : number of nodes resolution in the circular portions
     * **lanes** : number of lanes in the network
     * **speed** : max speed of vehicles in the network
-
-    Usage
-    -----
-    >>> from flow.core.params import NetParams
-    >>> from flow.core.params import VehicleParams
-    >>> from flow.core.params import InitialConfig
-    >>> from flow.networks import FigureEightNetwork
-    >>>
-    >>> network = FigureEightNetwork(
-    >>>     name='figure_eight',
-    >>>     vehicles=VehicleParams(),
-    >>>     net_params=NetParams(
-    >>>         additional_params={
-    >>>             'radius_ring': 50,
-    >>>             'lanes': 75,
-    >>>             'speed_limit': 30,
-    >>>             'resolution': 40
-    >>>         },
-    >>>     )
-    >>> )
     """
 
     def __init__(self,
@@ -73,11 +53,6 @@ class FigureEightNetwork(Network):
         self.junction_len = 2.9 + 3.3 * net_params.additional_params["lanes"]
         self.inner_space_len = 0.28
 
-        # # instantiate "length" in net params
-        # net_params.additional_params["length"] = \
-        #     6 * self.ring_edgelen + 2 * self.intersection_len + \
-        #     2 * self.junction_len + 10 * self.inner_space_len
-
         super().__init__(name, vehicles, net_params, initial_config,
                          traffic_lights)
 
@@ -89,8 +64,8 @@ class FigureEightNetwork(Network):
             "id": "center",
             "x": 0,
             "y": 0,
-            "radius": (2.9 + 3.3 * net_params.additional_params["lanes"])/2,
-            "type": "priority"
+            "radius": (2.9 + 3.3 * net_params.additional_params["lanes"]) / 2,
+            "type": "traffic_light"  # 신호등 노드로 설정
         }, {
             "id": "right",
             "x": r,
@@ -252,12 +227,6 @@ class FigureEightNetwork(Network):
             (":center_0", 3 / 2 * self.intersection_len + 3 * self.ring_edgelen
              + self.junction_len + 3 * self.inner_space_len),
             (":left", 2 * self.intersection_len + 3 * self.ring_edgelen
-             + 2 * self.junction_len + 3 * self.inner_space_len),
-            # for aimsun
-            ('bottom_to_top',
-             self.intersection_len / 2 + self.inner_space_len),
-            ('right_to_left',
-             + self.junction_len + 3 * self.inner_space_len),
-        ]
+             + 2 * self.junction_len + 3 * self.inner_space_len)]
 
         return internal_edgestarts
