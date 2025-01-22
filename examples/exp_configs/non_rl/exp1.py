@@ -68,6 +68,7 @@ flow_params = dict(
         additional_params={
             **ADDITIONAL_ENV_PARAMS,
             "tl_type": "static",
+            "discrete": False,
             "switch_time": 3  # 신호등 전환 시간 추가 (초 단위)
         },
     ),
