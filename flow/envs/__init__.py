@@ -18,7 +18,7 @@ from flow.envs.bottleneck_env import BottleNeckAccelEnv
 from flow.envs.bottleneck_env import DesiredVelocityEnv
 from flow.envs.green_wave_env import PO_TrafficLightGridEnv
 from flow.envs.green_wave_env import GreenWaveTestEnv
-
+from .custom_traffic_light_figure_eight import TrafficLightFigureEightEnv
 
 __all__ = [
     'Env',
