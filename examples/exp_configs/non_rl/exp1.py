@@ -9,7 +9,7 @@ from flow.core.params import SumoParams, EnvParams, NetParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
-from flow.envs.traffic_light_grid import TrafficLightGridPOEnv  # 최신 Env 클래스 임포트
+from flow.envs.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv  # 커스텀 Env 임포트
 from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
@@ -69,7 +69,7 @@ flow_params = dict(
     exp_tag='figure8_with_lights',  # 실험 이름 변경
 
     # name of the flow environment the experiment is running on
-    env_name=TrafficLightGridPOEnv,
+    env_name=traffic_light_figure_eight,
 
     # name of the network class the experiment is running on
     network=FigureEightNetwork,
