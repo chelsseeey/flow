@@ -5,10 +5,13 @@ either side of the intersection, leading to a significant reduction in the
 average speed of vehicles in the network.
 """
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter
-from flow.core.params import SumoParams, EnvParams, NetParams, VehicleParams, SumoCarFollowingParams, TrafficLightParams
+from flow.core.params import SumoParams, EnvParams, NetParams
+from flow.core.params import VehicleParams, SumoCarFollowingParams
+from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
+from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs import AccelEnv
 from flow.networks import FigureEightNetwork
-from flow.core.params import ADDITIONAL_NET_PARAMS, ADDITIONAL_ENV_PARAMS
+from flow.core.params import TrafficLightParams
 
 # 차량 설정
 vehicles = VehicleParams()
