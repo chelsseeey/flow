@@ -52,7 +52,7 @@ vehicles.add(
 # 신호등 설정
 traffic_lights = TrafficLightParams()
 traffic_lights.add(
-    node_id="center",  # Figure Eight의 교차점 노드 ID
+    node_id="center0",  # Figure Eight의 교차점 노드 ID
     programID=1,        # traffic_light_grid.py와 동일한 정수 ID 사용
     tls_type="static",  # 고정 주기 신호등
     phases=[

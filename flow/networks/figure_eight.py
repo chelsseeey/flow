@@ -61,7 +61,7 @@ class FigureEightNetwork(Network):
         r = net_params.additional_params["radius_ring"]
 
         nodes = [{
-            "id": "center",
+            "id": "center0",
             "x": 0,
             "y": 0,
             "radius": (2.9 + 3.3 * net_params.additional_params["lanes"]) / 2,
