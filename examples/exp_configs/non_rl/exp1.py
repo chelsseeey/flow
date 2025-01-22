@@ -84,14 +84,14 @@ flow_params = dict(
 
     # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
-        horizon=100000000,
+        horizon=1500,
         additional_params={
-        **ADDITIONAL_ENV_PARAMS,    # 기존 추가 환경 파라미터 유지
-        "switch_time": 3,            # 신호등 전환 시간 추가 (초 단위)
-        "tl_type": "static",         # 신호등 타입 추가
-        "max_accel": 3.0,            # 최대 가속도
-        "max_decel": 3.0,            # 최대 감속도
-        "action_space": "continuous" # 예시: 연속 행동 공간
+            "switch_time": 3,            # 신호등 전환 시간 추가 (초 단위)
+            "tl_type": "static",         # 신호등 타입 추가
+            "discrete": False,           # 연속 행동 공간 사용 여부
+            "max_accel": 3.0,            # 최대 가속도
+            "max_decel": 3.0,            # 최대 감속도
+            "action_space": "continuous" # 예시: 연속 행동 공간
         },
     ),
 
