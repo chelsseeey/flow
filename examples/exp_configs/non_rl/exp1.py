@@ -1,18 +1,16 @@
-"""Example of a figure 8 network with human-driven vehicles.
-
+"""
+Example of a figure 8 network with human-driven vehicles.
 Right-of-way dynamics near the intersection causes vehicles to queue up on
 either side of the intersection, leading to a significant reduction in the
 average speed of vehicles in the network.
 """
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter
-from flow.core.params import SumoParams, EnvParams, NetParams
-from flow.core.params import VehicleParams, SumoCarFollowingParams
-from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
-from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
+from flow.core.params import SumoParams, EnvParams, NetParams, VehicleParams, SumoCarFollowingParams, TrafficLightParams
 from flow.envs import AccelEnv
 from flow.networks import FigureEightNetwork
-from flow.core.params import TrafficLightParams  # 신호등 설정 추가
+from flow.core.params import ADDITIONAL_NET_PARAMS, ADDITIONAL_ENV_PARAMS
 
+# 차량 설정
 vehicles = VehicleParams()
 vehicles.add(
     veh_id="idm",
@@ -27,17 +25,21 @@ vehicles.add(
     num_vehicles=14
 )
 
-# 신호등 설정 추가
+# 신호등 설정
 traffic_lights = TrafficLightParams()
 traffic_lights.add(
-    node_id="center",  # Figure Eight의 교차점 노드
+    node_id="center",  # Figure Eight의 교차점 노드 ID
+    programID=1,        # traffic_light_grid.py와 동일한 정수 ID 사용
     tls_type="static",  # 고정 주기 신호등
     phases=[
         {"duration": "30", "state": "GrGr"},  # 가로 방향 초록불
-        {"duration": "30", "state": "rGrG"}   # 세로 방향 초록불
+        {"duration": "5", "state": "yrGr"},   # 가로 방향 노랑불
+        {"duration": "30", "state": "rGrG"},  # 세로 방향 초록불
+        {"duration": "5", "state": "ryrG"},   # 세로 방향 노랑불
     ]
 )
 
+# 시뮬레이션 파라미터 설정
 flow_params = dict(
     # name of the experiment
     exp_tag='figure8_with_lights',  # 실험 이름 변경
