@@ -103,13 +103,13 @@ class FigureEightNetwork(Network):
             "type": "edgeType",
             "priority": "78",
             "from": "bottom",
-            "to": "center",
+            "to": "center0",
             "length": intersection_edgelen / 2
         }, {
             "id": "top",
             "type": "edgeType",
             "priority": 78,
-            "from": "center",
+            "from": "center0",
             "to": "top",
             "length": intersection_edgelen / 2
         }, {
@@ -117,13 +117,13 @@ class FigureEightNetwork(Network):
             "type": "edgeType",
             "priority": 46,
             "from": "right",
-            "to": "center",
+            "to": "center0",
             "length": intersection_edgelen / 2
         }, {
             "id": "left",
             "type": "edgeType",
             "priority": 46,
-            "from": "center",
+            "from": "center0",
             "to": "left",
             "length": intersection_edgelen / 2
         }]
@@ -194,7 +194,7 @@ class FigureEightNetwork(Network):
                       "to": "left",
                       "fromLane": str(i),
                       "toLane": str(i)}]
-        conn_dict["center"] = conn
+        conn_dict["center0"] = conn
         return conn_dict
 
     def specify_edge_starts(self):
