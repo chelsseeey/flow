@@ -82,5 +82,11 @@ flow_params = dict(
     traffic_lights=traffic_lights
 )
 
-network = FigureEightNetwork()
+# ↓ 직접 네트워크 객체를 만들 때, 필요한 인자를 넘겨준다.
+network = FigureEightNetwork(
+    name="figure_eight",
+    vehicles=flow_params["veh"],            # vehicles
+    net_params=flow_params["net"]           # net=NetParams(...)
+)
+
 print("Junctions in this network:", network.nodes())
