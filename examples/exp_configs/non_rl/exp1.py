@@ -69,7 +69,7 @@ flow_params = dict(
     exp_tag='figure8_with_lights',  # 실험 이름 변경
 
     # name of the flow environment the experiment is running on
-    env_name='traffic_light_figure_eight-v0',  # 커스텀 Env 사용
+    env_name=TrafficLightFigureEightEnv,  # 커스텀 Env 사용
 
     # name of the network class the experiment is running on
     network=FigureEightNetwork,
