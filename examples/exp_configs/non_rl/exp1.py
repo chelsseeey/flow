@@ -89,4 +89,4 @@ network = FigureEightNetwork(
     net_params=flow_params["net"]           # net=NetParams(...)
 )
 
-print("Junctions in this network:", network.nodes())
+print("Junctions in this network:", network.nodes)
