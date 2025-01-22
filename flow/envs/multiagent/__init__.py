@@ -11,6 +11,7 @@ from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
 from flow.envs.multiagent.highway import MultiAgentHighwayPOEnv
 from flow.envs.multiagent.merge import MultiAgentMergePOEnv
 from flow.envs.multiagent.i210 import I210MultiEnv
+from flow.envs.multiagent.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv  # 커스텀 환경 임포트
 
 __all__ = [
     'MultiEnv',
@@ -22,4 +23,5 @@ __all__ = [
     'MultiAgentWaveAttenuationPOEnv',
     'MultiAgentMergePOEnv',
     'I210MultiEnv'
+    'TrafficLightFigureEightEnv'  # 커스텀 환경 추가    
 ]

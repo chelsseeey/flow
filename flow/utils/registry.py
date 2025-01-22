@@ -137,7 +137,7 @@ def env_constructor(params, version=0, render=None):
     create_env, env_name = make_create_env(params, version, render)
     return create_env
 
-from flow.envs.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv
+from flow.envs.multiagent.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv
 
 register(
     id='traffic_light_figure_eight-v0',
