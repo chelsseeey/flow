@@ -23,7 +23,7 @@ network = FigureEightNetwork(
 )
 
 # print문은 그대로 유지
-print("Junctions in this network:", network.get_junctions())
+print("Junctions in this network:", network.nodes())
 
 
 # 차량 설정
