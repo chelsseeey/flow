@@ -65,7 +65,10 @@ flow_params = dict(
     # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
         horizon=100000000,
-        additional_params=ADDITIONAL_ENV_PARAMS.copy(),
+        additional_params={
+            **ADDITIONAL_ENV_PARAMS,
+            "switch_time": 3  # 신호등 전환 시간 추가 (초 단위)
+        },
     ),
 
     # network-related parameters (see flow.core.params.NetParams and the
