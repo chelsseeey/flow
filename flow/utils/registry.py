@@ -136,7 +136,10 @@ def env_constructor(params, version=0, render=None):
     """Return a constructor from make_create_env."""
     create_env, env_name = make_create_env(params, version, render)
     return create_env
-from flow.envs.multiagent.custom_traffic_light_figure_eight import TrafficLightFigureEightEnvregister(
+
+from flow.envs.multiagent.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv
+
+register(
     id='traffic_light_figure_eight-v0',  # 버전 번호 포함
     entry_point='flow.envs.multiagent.custom_traffic_light_figure_eight:TrafficLightFigureEightEnv',
 )
