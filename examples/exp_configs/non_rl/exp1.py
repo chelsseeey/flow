@@ -13,6 +13,11 @@ from flow.envs import AccelEnv
 from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
+
+network = FigureEightNetwork()
+print("Junctions in this network:", network.get_junctions())
+
+
 # 차량 설정
 vehicles = VehicleParams()
 vehicles.add(
