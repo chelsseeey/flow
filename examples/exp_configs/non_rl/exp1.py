@@ -13,7 +13,7 @@ from flow.envs import AccelEnv
 from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
-
+vehicles = VehicleParams()
 network = FigureEightNetwork(
     name="figure_eight",            # 네트워크 이름
     vehicles=vehicles,              # Line 24에서 이미 정의된 vehicles 사용
