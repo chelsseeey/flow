@@ -3,7 +3,9 @@
 from flow.envs.base import Env
 from flow.core import rewards
 from gym import spaces
+
 import numpy as np
+from gym.spaces import Box
 
 class TrafficLightFigureEightEnv(Env):
     """Custom environment for Figure Eight Network with traffic lights."""
@@ -81,3 +83,28 @@ class TrafficLightFigureEightEnv(Env):
         initial_phase = self.network.traffic_lights[0].phases[0]["state"]
         self.k.traffic_light.set_state("center0", initial_phase)
         self.current_phase = 0
+
+    def _apply_rl_actions(self, rl_actions):
+        """RL 에이전트의 행동을 적용"""
+        for i, rl_id in enumerate(self.k.vehicle.get_rl_ids()):
+            self.k.vehicle.apply_acceleration(rl_id, rl_actions[i])
+
+    @property
+    def action_space(self):
+        """행동 공간 정의"""
+        return Box(
+            low=-abs(self.env_params.additional_params['max_decel']),
+            high=self.env_params.additional_params['max_accel'],
+            shape=(self.initial_vehicles.num_rl_vehicles,),
+            dtype=np.float32
+        )
+
+    @property
+    def observation_space(self):
+        """관찰 공간 정의"""
+        return Box(
+            low=0,
+            high=1,
+            shape=(2 * self.initial_vehicles.num_vehicles,),
+            dtype=np.float32
+        )
