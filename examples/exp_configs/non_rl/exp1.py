@@ -90,6 +90,7 @@ flow_params = dict(
             "tl_type": "static",         # 신호등 타입 추가
             "discrete": False,           # 연속 행동 공간 사용 여부
             "num_observed": 10,          # 에이전트가 관찰할 차량 수
+            "target_velocity": 30,       # 차량의 목표 속도
             "max_accel": 3.0,            # 최대 가속도
             "max_decel": 3.0,            # 최대 감속도
             "action_space": "continuous" # 예시: 연속 행동 공간
