@@ -14,7 +14,15 @@ from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
 
-network = FigureEightNetwork()
+network = FigureEightNetwork(
+    name="figure_eight",            # 네트워크 이름
+    vehicles=vehicles,              # Line 24에서 이미 정의된 vehicles 사용
+    net_params=NetParams(           # NetParams는 이미 import 되어있음
+        additional_params=ADDITIONAL_NET_PARAMS  # Line 10에서 import된 파라미터
+    )
+)
+
+# print문은 그대로 유지
 print("Junctions in this network:", network.get_junctions())
 
 
