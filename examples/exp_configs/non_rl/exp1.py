@@ -52,7 +52,7 @@ vehicles.add(
 # 신호등 설정
 traffic_lights = TrafficLightParams()
 traffic_lights.add(
-    node_id="center0",  # Figure Eight의 교차점 노드 ID
+    node_id="center",  # Figure Eight의 교차점 노드 ID
     programID=1,        # traffic_light_grid.py와 동일한 정수 ID 사용
     tls_type="static",  # 고정 주기 신호등
     phases=[
@@ -86,18 +86,24 @@ flow_params = dict(
     env=EnvParams(
         horizon=100000000,
         additional_params={
-            **ADDITIONAL_ENV_PARAMS,
-            "tl_type": "static",
-            "discrete": False,
-            "switch_time": 3  # 신호등 전환 시간 추가 (초 단위)
+        **ADDITIONAL_ENV_PARAMS,    # 기존 추가 환경 파라미터 유지
+        "switch_time": 3,            # 신호등 전환 시간 추가 (초 단위)
+        "tl_type": "static",         # 신호등 타입 추가
+        "max_accel": 3.0,            # 최대 가속도
+        "max_decel": 3.0,            # 최대 감속도
+        "action_space": "continuous" # 예시: 연속 행동 공간
         },
     ),
 
     # network-related parameters (see flow.core.params.NetParams and the
     # network's documentation or ADDITIONAL_NET_PARAMS component)
-    net=NetParams(
-        additional_params=ADDITIONAL_NET_PARAMS.copy(),
-    ),
+   net=NetParams(
+    additional_params={
+        **ADDITIONAL_NET_PARAMS,  # 네트워크 클래스가 요구하는 추가 파라미터 포함
+        "grid_array": ADDITIONAL_NET_PARAMS["grid_array"]  # grid_array 추가
+    },
+),
+
 
     # vehicles to be placed in the network at the start of a rollout (see
     # flow.core.params.VehicleParams)
