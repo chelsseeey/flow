@@ -14,6 +14,19 @@ from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
 
+# grid_array 정의
+grid_array = {
+    "short_length": 300,       # 짧은 도로의 길이 (미터)
+    "inner_length": 300,       # 내부 도로의 길이 (미터)
+    "long_length": 500,        # 긴 도로의 길이 (미터)
+    "row_num": 2,              # 가로 방향 도로의 수
+    "col_num": 3,              # 세로 방향 도로의 수
+    "cars_left": 20,           # 왼쪽에서 유입되는 차량 수
+    "cars_right": 20,          # 오른쪽에서 유입되는 차량 수
+    "cars_top": 20,            # 위쪽에서 유입되는 차량 수
+    "cars_bot": 20             # 아래쪽에서 유입되는 차량 수
+}
+
 # 차량 설정
 vehicles = VehicleParams()
 vehicles.add(
