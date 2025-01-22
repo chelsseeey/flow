@@ -14,19 +14,24 @@ from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams
 
 
-# grid_array를 ADDITIONAL_NET_PARAMS에 추가
+# 1. grid_array 수정 - grid 환경에 맞게 설정
 ADDITIONAL_NET_PARAMS.update({
     "grid_array": {
         "short_length": 300,
         "inner_length": 300,
         "long_length": 500,
-        "row_num": 2,
-        "col_num": 3,
-        "cars_left": 20,
-        "cars_right": 20,
-        "cars_top": 20,
-        "cars_bot": 20
-    }
+        "row_num": 1,        # 1x1 grid로 변경 (8자형 교차로와 비슷하게)
+        "col_num": 1,        # 1x1 grid로 변경
+        "cars_left": 5,      # 각 방향 차량 수 조정
+        "cars_right": 5,
+        "cars_top": 5,
+        "cars_bot": 5
+    },
+    # Figure8Network 파라미터도 유지
+    "radius_ring": 30,
+    "lanes": 1,
+    "speed_limit": 30,
+    "resolution": 40
 })
 
 # 차량 설정
@@ -47,7 +52,7 @@ vehicles.add(
 # 신호등 설정
 traffic_lights = TrafficLightParams()
 traffic_lights.add(
-    node_id="center",  # Figure Eight의 교차점 노드 ID
+    node_id="center0",  # Figure Eight의 교차점 노드 ID
     programID=1,        # traffic_light_grid.py와 동일한 정수 ID 사용
     tls_type="static",  # 고정 주기 신호등
     phases=[
