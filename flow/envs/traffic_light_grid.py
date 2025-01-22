@@ -664,7 +664,7 @@ class TrafficLightGridPOEnv(TrafficLightGridEnv):
                        grid_array["inner_length"])
         all_observed_ids = []
 
-        for _, edges in self.network.node_mapping:
+        for node_id, edges in self.network.node_mapping.items():
             for edge in edges:
                 observed_ids = \
                     self.get_closest_to_intersection(edge, self.num_observed)
