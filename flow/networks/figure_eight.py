@@ -56,6 +56,15 @@ class FigureEightNetwork(Network):
         super().__init__(name, vehicles, net_params, initial_config,
                          traffic_lights)
 
+        # Define node_mapping after nodes and edges are specified
+        self.node_mapping = {
+            'center0': ['bottom', 'top', 'right', 'left'],
+            'right': ['center0'],
+            'left': ['center0'],
+            'top': ['center0'],
+            'bottom': ['center0']
+        }     
+
     def specify_nodes(self, net_params):
         """See parent class."""
         r = net_params.additional_params["radius_ring"]
