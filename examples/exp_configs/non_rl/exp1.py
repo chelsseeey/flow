@@ -66,7 +66,7 @@ traffic_lights.add(
 )
 
 # 시뮬레이션 파라미터 설정
-fflow_params = dict(
+flow_params = dict(
     exp_tag='figure8_with_lights',
     env_name=TrafficLightFigureEightEnv,
     network=FigureEightNetwork,
