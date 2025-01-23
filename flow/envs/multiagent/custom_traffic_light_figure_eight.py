@@ -39,7 +39,7 @@ class TrafficLightFigureEightEnv(Env):
     def step(self, action):
         """Run one timestep of the environment's dynamics."""
         # Apply action (e.g., change traffic light phase)
-        self.apply_action(action)
+        # self.apply_action(action)
 
         # Step the simulation
         self.sim.step()
@@ -65,14 +65,6 @@ class TrafficLightFigureEightEnv(Env):
         speeds = [self.k.vehicle.get_speed(veh_id) for veh_id in observed_ids]
         return np.array(speeds)
 
-    def apply_action(self, action):
-        """Apply the action to the environment."""
-        # Example: Change traffic light phase based on action
-        phases = self.network.traffic_lights[0].phases
-        new_phase = phases[action]
-        self.k.traffic_light.set_state("center0", new_phase["state"])
-        self.current_phase = action
-
     def compute_reward(self, obs):
         """Compute the reward for the current state."""
         # Example: Minimize total speed (to reduce congestion)
@@ -84,12 +76,7 @@ class TrafficLightFigureEightEnv(Env):
         self.k.traffic_light.set_state("center0", initial_phase)
         self.current_phase = 0
 
-    def _apply_rl_actions(self, rl_actions):
-        """RL 에이전트의 행동을 적용"""
-        for i, rl_id in enumerate(self.k.vehicle.get_rl_ids()):
-            self.k.vehicle.apply_acceleration(rl_id, rl_actions[i])
 
-    @property
     def action_space(self):
         """행동 공간 정의"""
         return Box(
@@ -99,7 +86,6 @@ class TrafficLightFigureEightEnv(Env):
             dtype=np.float32
         )
 
-    @property
     def observation_space(self):
         """관찰 공간 정의"""
         return Box(
