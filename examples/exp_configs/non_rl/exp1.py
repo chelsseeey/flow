@@ -73,6 +73,7 @@ flow_params = dict(
     simulator='traci',
     sim=SumoParams(
         render=True,
+
     ),
     env=EnvParams(
         horizon=1500,
@@ -98,3 +99,4 @@ flow_params = dict(
 print("차선 수:", ADDITIONAL_NET_PARAMS["lanes"])
 print("원형 구간 반지름:", ADDITIONAL_NET_PARAMS["radius_ring"])
 print("속도 제한:", ADDITIONAL_NET_PARAMS["speed_limit"])
+print(f"Environment being used: {flow_params['env_name']}")
