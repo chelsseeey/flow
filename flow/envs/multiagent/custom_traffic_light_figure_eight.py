@@ -60,6 +60,7 @@ class TrafficLightFigureEightEnv(Env):
             self.phase_time = 0
             self.current_phase = (self.current_phase + 1) % len(self.phases)
             self.k.traffic_light.set_state("center0", self.phases[self.current_phase]["state"])
+            print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")
 
     def reset_traffic_lights(self):
         """Reset traffic lights to initial phase."""
