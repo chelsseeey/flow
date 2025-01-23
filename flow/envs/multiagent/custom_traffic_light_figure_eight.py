@@ -47,18 +47,6 @@ class TrafficLightFigureEightEnv(Env):
         # 초기 관측치 반환
         return self.get_state()
 
-   # def step(self, action):
-        """Run one timestep of the environment's dynamics."""
-        # static하므로 action을 사용하지 않음
-        self.sim.step()
-
-        obs = self.get_state()
-        reward = self.compute_reward(obs)
-        done = self.sim.get_time() >= self.env_params.horizon
-        info = {}
-
-        return obs, reward, done, info
-
     def get_state(self):
         """Get the current state of the environment (ex: 차량 속도들)."""
         observed_ids = self.k.vehicle.get_ids()
