@@ -67,54 +67,31 @@ traffic_lights.add(
 
 # 시뮬레이션 파라미터 설정
 flow_params = dict(
-    # name of the experiment
-    exp_tag='figure8_with_lights',  # 실험 이름 변경
-
-    # name of the flow environment the experiment is running on
-    env_name=TrafficLightFigureEightEnv,  # 커스텀 Env 사용
-
-    # name of the network class the experiment is running on
+    exp_tag='figure8_with_lights',
+    env_name=TrafficLightFigureEightEnv,
     network=FigureEightNetwork,
-
-    # simulator that is used by the experiment
     simulator='traci',
-
-    # sumo-related parameters (see flow.core.params.SumoParams)
     sim=SumoParams(
         render=True,
     ),
-
-    # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
         horizon=1500,
         additional_params={
-            "switch_time": 3,            # 신호등 전환 시간 추가 (초 단위)
-            "tl_type": "static",         # 신호등 타입 추가
-            "discrete": False,           # 연속 행동 공간 사용 여부
-            "num_observed": 10,          # 에이전트가 관찰할 차량 수
-            "target_velocity": 30,       # 차량의 목표 속도
-            "max_accel": 3.0,            # 최대 가속도
-            "max_decel": 3.0,            # 최대 감속도
-            "action_space": "continuous" # 예시: 연속 행동 공간
+            "switch_time": 3,
+            "tl_type": "static",
+            "discrete": False,
+            "num_observed": 10,
+            "target_velocity": 30,
+            "max_accel": 3.0,
+            "max_decel": 3.0,
+            "action_space": "continuous"
         },
     ),
-
-    # network-related parameters (see flow.core.params.NetParams and the
-# network-related parameters
-net=NetParams(
-    additional_params=ADDITIONAL_NET_PARAMS,
-    traffic_lights=traffic_lights  # traffic_lights를 여기에 추가
-),
-
-# vehicles to be placed in the network at the start of a rollout
-veh=vehicles
-
-network = FigureEightNetwork(
-    name="figure_eight",
-    vehicles=vehicles,
-    net_params=NetParams(
-        additional_params=ADDITIONAL_NET_PARAMS
-    )
+    net=NetParams(
+        additional_params=ADDITIONAL_NET_PARAMS,
+        traffic_lights=traffic_lights
+    ),
+    veh=vehicles
 )
 
 # 네트워크 정보 출력
