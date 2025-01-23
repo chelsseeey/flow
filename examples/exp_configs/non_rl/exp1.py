@@ -73,6 +73,7 @@ flow_params = dict(
     simulator='traci',
     sim=SumoParams(
         render=True,
+        sim_step=0.1,
 
     ),
     env=EnvParams(
