@@ -1,6 +1,7 @@
 from flow.envs.base import Env
 from gym import spaces
 import numpy as np
+import traci
 
 class TrafficLightFigureEightEnv(Env):
     """Custom environment for Figure Eight Network with static traffic lights."""
@@ -61,8 +62,8 @@ class TrafficLightFigureEightEnv(Env):
             self.current_phase = (self.current_phase + 1) % len(self.phases)
             self.k.traffic_light.set_state("center0", self.phases[self.current_phase]["state"])
             print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")
-            self.k.traffic_light.set_state("center0", "GrGr")
-
+            traci.trafficlight.setRedYellowGreenState("center0", "GrGr")
+        
     def reset_traffic_lights(self):
         """Reset traffic lights to initial phase."""
         self.k.traffic_light.set_state("center0", self.phases[0]["state"])
