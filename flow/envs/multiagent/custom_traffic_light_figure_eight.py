@@ -22,8 +22,8 @@ class TrafficLightFigureEightEnv(Env):
         )
 
         # Initialize simulator
-        self.sim = simulator
-
+        self.sim = self.k
+        
         # Initialize traffic light state if necessary
         # Example: Current phase index
         self.current_phase = 0
