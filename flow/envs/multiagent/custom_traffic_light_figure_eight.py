@@ -65,6 +65,10 @@ class TrafficLightFigureEightEnv(Env):
         speeds = [self.k.vehicle.get_speed(veh_id) for veh_id in observed_ids]
         return np.array(speeds)
 
+    def _apply_rl_actions(self, actions):
+        """No-op since traffic lights are static."""
+        pass
+
     def compute_reward(self, obs):
         """Compute the reward for the current state."""
         # Example: Minimize total speed (to reduce congestion)
