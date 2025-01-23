@@ -63,14 +63,17 @@ class TrafficLightFigureEightEnv(Env):
 
 
     def _update_traffic_lights(self):
-        """Update traffic lights based on the current phase and time."""
-        print(f"Updating traffic lights... Current phase: {self.current_phase}")  # 디버깅 로그 추가
+        print(f"Updating traffic lights... Current phase: {self.current_phase}")
         self.phase_time += self.sim_step
         if self.phase_time >= self.phases[self.current_phase]["duration"]:
             self.phase_time = 0
             self.current_phase = (self.current_phase + 1) % len(self.phases)
             self.k.traffic_light.set_state("center0", self.phases[self.current_phase]["state"])
-            print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")  # 신호 변경 로그 추가
+            print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")
+        # 디버깅 추가: 현재 상태를 다시 확인
+        current_state = self.k.traffic_light.get_state("center0")
+        print(f"Current state of traffic light 'center0': {current_state}")
+
 
         
     def reset_traffic_lights(self):
