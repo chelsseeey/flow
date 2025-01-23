@@ -23,7 +23,7 @@ class TrafficLightFigureEightEnv(Env):
 
         # Initialize simulator
         self.sim = self.k
-        
+
         # Initialize traffic light state if necessary
         # Example: Current phase index
         self.current_phase = 0
@@ -31,7 +31,7 @@ class TrafficLightFigureEightEnv(Env):
     def reset(self):
         """Reset the environment to initial state."""
         # Reset the simulation
-        self.sim.reset()
+        super().reset()
 
         # Reset traffic lights
         self.reset_traffic_lights()
