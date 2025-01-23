@@ -72,6 +72,9 @@ class TrafficLightFigureEightEnv(Env):
         """Compute the reward for the current state."""
         if fail:
             return -100  # 실패 시 큰 패널티 부여 (값은 필요에 따라 조정)
+        if obs is None:
+            return -100  
+    
         return -np.sum(obs)
 
     def reset_traffic_lights(self):
