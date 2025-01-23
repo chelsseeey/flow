@@ -21,6 +21,9 @@ class TrafficLightFigureEightEnv(Env):
             low=0, high=np.inf, shape=(self.env_params.additional_params["num_observed"],), dtype=np.float32
         )
 
+        # Initialize simulator
+        self.sim = simulator
+
         # Initialize traffic light state if necessary
         # Example: Current phase index
         self.current_phase = 0
