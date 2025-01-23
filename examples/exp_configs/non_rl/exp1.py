@@ -122,7 +122,8 @@ network = FigureEightNetwork(
     vehicles=vehicles,
     net_params=NetParams(
         additional_params=ADDITIONAL_NET_PARAMS
-    )
+    ),
+    traffic_lights=traffic_lights  # 이 부분을 추가
 )
 
 # 네트워크 정보 출력
