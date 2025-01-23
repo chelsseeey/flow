@@ -68,9 +68,10 @@ class TrafficLightFigureEightEnv(Env):
         ]
         return np.array(speeds, dtype=np.float32)
 
-    def compute_reward(self, obs):
+    def compute_reward(self, obs, fail=None):
         """Compute the reward for the current state."""
-        # 예: 전체 속도의 합을 줄이는 방향 -> -np.sum(...)
+        if fail:
+            return -100  # 실패 시 큰 패널티 부여 (값은 필요에 따라 조정)
         return -np.sum(obs)
 
     def reset_traffic_lights(self):
