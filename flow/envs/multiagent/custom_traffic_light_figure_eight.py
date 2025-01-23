@@ -47,7 +47,7 @@ class TrafficLightFigureEightEnv(Env):
         # 초기 관측치 반환
         return self.get_state()
 
-    def step(self, action):
+   # def step(self, action):
         """Run one timestep of the environment's dynamics."""
         # static하므로 action을 사용하지 않음
         self.sim.step()
