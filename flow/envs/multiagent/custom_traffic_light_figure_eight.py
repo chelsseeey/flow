@@ -1,7 +1,6 @@
 # flow/envs/custom/custom_traffic_light_figure_eight.py
 
 from flow.envs.base import Env
-from flow.core import rewards
 from gym import spaces
 import numpy as np
 
@@ -11,12 +10,10 @@ class TrafficLightFigureEightEnv(Env):
     def __init__(self, env_params, sim_params, network, simulator='traci'):
         """Initialize the environment."""
         super().__init__(env_params, sim_params, network, simulator)
-        
-        # Define a dummy action space since traffic lights are static
-        self.action_space = spaces.Discrete(1)  # Only one possible action (no-op)
-        
-        # Define observation space
-        self.observation_space = spaces.Box(
+
+        # 1) 내부(프라이빗) 변수에 action_space, observation_space를 저장
+        self._action_space = spaces.Discrete(1)  # Only one possible action (no-op)
+        self._observation_space = spaces.Box(
             low=0, 
             high=np.inf, 
             shape=(self.env_params.additional_params["num_observed"],), 
@@ -28,6 +25,17 @@ class TrafficLightFigureEightEnv(Env):
 
         # Initialize traffic light state if necessary
         self.current_phase = 0
+
+    # 2) @property 데코레이터로 추상 프로퍼티 구현
+    @property
+    def action_space(self):
+        """Gym에서 요구하는 action_space 프로퍼티."""
+        return self._action_space
+
+    @property
+    def observation_space(self):
+        """Gym에서 요구하는 observation_space 프로퍼티."""
+        return self._observation_space
 
     def reset(self):
         """Reset the environment to initial state."""
@@ -43,10 +51,6 @@ class TrafficLightFigureEightEnv(Env):
     def step(self, action):
         """Run one timestep of the environment's dynamics."""
         # Since action is a dummy, ignore it or treat as no-op
-        # Apply action (no operation)
-        # self.apply_action(action)
-
-        # Step the simulation
         self.sim.step()
 
         # Get observation
@@ -65,7 +69,6 @@ class TrafficLightFigureEightEnv(Env):
 
     def get_state(self):
         """Get the current state of the environment."""
-        # Collect speeds of observed vehicles
         observed_ids = self.k.vehicle.get_ids()
         speeds = [
             self.k.vehicle.get_speed(veh_id)
@@ -80,8 +83,7 @@ class TrafficLightFigureEightEnv(Env):
     
     def reset_traffic_lights(self):
         """Reset traffic lights to initial phase."""
-        # 올바른 방식으로 TrafficLightParams 접근
-        # 'tls'는 TrafficLightParams 객체의 리스트를 나타냄
+        # 'tls'는 TrafficLightParams 객체 내부 리스트
         initial_phase = self.network.traffic_lights.tls[0]['phases'][0]['state']
         self.k.traffic_light.set_state("center0", initial_phase)
         self.current_phase = 0
