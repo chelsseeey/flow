@@ -1,5 +1,3 @@
-# flow/envs/custom/custom_traffic_light_figure_eight.py
-
 from flow.envs.base import Env
 from gym import spaces
 import numpy as np
@@ -11,31 +9,35 @@ class TrafficLightFigureEightEnv(Env):
         """Initialize the environment."""
         super().__init__(env_params, sim_params, network, simulator)
 
-        # (1) 내부 변수에 action_space / observation_space 저장
-        self._action_space = spaces.Discrete(1)  # Only one possible action (no-op)
-        self._observation_space = spaces.Box(
+        # 시뮬레이터 객체 초기화
+        self.sim = self.k
+
+        # 트래픽 라이트 초기 상태
+        self.current_phase = 0
+        self.phase_time = 0
+        self.phases = [
+            {"duration": 15, "state": "GrGr"},
+            {"duration": 3, "state": "yrGr"},
+            {"duration": 2, "state": "rrrr"},
+            {"duration": 15, "state": "rGrG"},
+            {"duration": 3, "state": "ryrG"},
+            {"duration": 2, "state": "rrrr"}
+        ]
+
+    @property
+    def action_space(self):
+        """Gym에서 요구하는 action_space 프로퍼티."""
+        return spaces.Discrete(1)  # Only one possible action (no-op)
+
+    @property
+    def observation_space(self):
+        """Gym에서 요구하는 observation_space 프로퍼티."""
+        return spaces.Box(
             low=0,
             high=np.inf,
             shape=(self.env_params.additional_params["num_observed"],),
             dtype=np.float32
         )
-
-        # (2) 시뮬레이터 객체 초기화
-        self.sim = self.k
-
-        # (3) 트래픽 라이트 초기 상태
-        self.current_phase = 0
-
-    # (4) Gym에서 요구하는 추상 프로퍼티 구현 (@property)
-    @property
-    def action_space(self):
-        """Gym에서 요구하는 action_space 프로퍼티."""
-        return self._action_space
-
-    @property
-    def observation_space(self):
-        """Gym에서 요구하는 observation_space 프로퍼티."""
-        return self._observation_space
 
     def reset(self):
         """Reset the environment to initial state."""
@@ -46,6 +48,24 @@ class TrafficLightFigureEightEnv(Env):
 
         # 초기 관측치 반환
         return self.get_state()
+
+    def _apply_rl_actions(self, actions):
+        """No-op since traffic lights are static."""
+        self._update_traffic_lights()
+
+    def _update_traffic_lights(self):
+        """Update traffic lights based on the current phase and time."""
+        self.phase_time += self.sim_step
+        if self.phase_time >= self.phases[self.current_phase]["duration"]:
+            self.phase_time = 0
+            self.current_phase = (self.current_phase + 1) % len(self.phases)
+            self.k.traffic_light.set_state("center0", self.phases[self.current_phase]["state"])
+
+    def reset_traffic_lights(self):
+        """Reset traffic lights to initial phase."""
+        self.k.traffic_light.set_state("center0", self.phases[0]["state"])
+        self.current_phase = 0
+        self.phase_time = 0
 
     def get_state(self):
         """Get the current state of the environment (ex: 차량 속도들)."""
@@ -64,27 +84,3 @@ class TrafficLightFigureEightEnv(Env):
             return -100  
     
         return -np.sum(obs)
-
-    def reset_traffic_lights(self):
-        """Reset traffic lights to initial phase."""
-        node_id = "center0"  # 트래픽 라이트 등록 시 사용한 노드 ID와 동일
-        all_tl_props = self.network.traffic_lights.get_properties()
-        # 형태: { "center0": {"phases": [...], ...}, "other_node": {...}, ... }
-
-        if node_id in all_tl_props and "phases" in all_tl_props[node_id]:
-            phases = all_tl_props[node_id]["phases"]
-            if phases:
-                initial_phase = phases[0]["state"]
-            else:
-                # phases가 비어있다면 기본값
-                initial_phase = "GrGr"
-        else:
-            # node_id가 없거나 phases 키가 없다면
-            initial_phase = "GrGr"
-
-        self.k.traffic_light.set_state(node_id, initial_phase)
-        self.current_phase = 0
-
-    def _apply_rl_actions(self, actions):
-        """No-op since traffic lights are static."""
-        pass
