@@ -8,10 +8,12 @@ class TrafficLightFigureEightEnv(Env):
     def __init__(self, env_params, sim_params, network, simulator='traci'):
         """Initialize the environment."""
         super().__init__(env_params, sim_params, network, simulator)
-        self.sim_step = sim_params.sim_step
 
         # 시뮬레이터 객체 초기화
         self.sim = self.k
+
+        # sim_step 값을 가져오기
+        self.sim_step = sim_params.sim_step  # sim_step 값을 sim_params에서 가져옴
 
         # 트래픽 라이트 초기 상태
         self.current_phase = 0
@@ -42,26 +44,34 @@ class TrafficLightFigureEightEnv(Env):
 
     def reset(self):
         """Reset the environment to initial state."""
+        print("Resetting the environment...")  # 디버깅 로그 추가
         super().reset()  # 시뮬레이션 리셋(차량 재배치 등)
 
         # 신호등 초기화
         self.reset_traffic_lights()
 
         # 초기 관측치 반환
-        return self.get_state()
+        state = self.get_state()
+        print(f"Initial state: {state}")  # 초기 상태 출력
+        return state
+
 
     def _apply_rl_actions(self, actions):
         """No-op since traffic lights are static."""
+        print(f"Applying RL actions: {actions}")  # 디버깅 로그 추가
         self._update_traffic_lights()
+
 
     def _update_traffic_lights(self):
         """Update traffic lights based on the current phase and time."""
+        print(f"Updating traffic lights... Current phase: {self.current_phase}")  # 디버깅 로그 추가
         self.phase_time += self.sim_step
         if self.phase_time >= self.phases[self.current_phase]["duration"]:
             self.phase_time = 0
             self.current_phase = (self.current_phase + 1) % len(self.phases)
             self.k.traffic_light.set_state("center0", self.phases[self.current_phase]["state"])
-            print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")
+            print(f"Traffic light 'center0' set to state: {self.phases[self.current_phase]['state']}")  # 신호 변경 로그 추가
+
         
     def reset_traffic_lights(self):
         """Reset traffic lights to initial phase."""
