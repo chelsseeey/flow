@@ -56,12 +56,12 @@ traffic_lights.add(
     programID=1,        # traffic_light_grid.py와 동일한 정수 ID 사용
     tls_type="static",  # 고정 주기 신호등
     phases=[
-        {"duration": "30", "state": "GrGr"},  # 가로 방향 초록불
-        {"duration": "5", "state": "yrGr"},   # 가로 방향 노랑불
-        {"duration": "10", "state": "rrrr"},  # 모든 방향 빨간불 (Full Red)
-        {"duration": "30", "state": "rGrG"},  # 세로 방향 초록불
-        {"duration": "5", "state": "ryrG"},   # 세로 방향 노랑불
-        {"duration": "10", "state": "rrrr"},  # 모든 방향 빨간불 (Full Red)
+        {"duration": "15", "state": "GrGr"},  # 가로 초록
+        {"duration": "3", "state": "yrGr"},   # 가로 노랑
+        {"duration": "2", "state": "rrrr"},   # 모두 빨강
+        {"duration": "15", "state": "rGrG"},  # 세로 초록
+        {"duration": "3", "state": "ryrG"},   # 세로 노랑
+        {"duration": "2", "state": "rrrr"}    # 모두 빨강
     ]
 )
 
@@ -71,7 +71,7 @@ flow_params = dict(
     exp_tag='figure8_with_lights',  # 실험 이름 변경
 
     # name of the flow environment the experiment is running on
-    env_name='TrafficLightFigureEightEnv-v0',  # 커스텀 Env 사용
+    env_name=TrafficLightFigureEightEnv,  # 커스텀 Env 사용
 
     # name of the network class the experiment is running on
     network=FigureEightNetwork,
