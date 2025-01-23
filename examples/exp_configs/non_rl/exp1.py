@@ -100,30 +100,21 @@ flow_params = dict(
     ),
 
     # network-related parameters (see flow.core.params.NetParams and the
-    # network's documentation or ADDITIONAL_NET_PARAMS component)
-   net=NetParams(
-    additional_params={
-        **ADDITIONAL_NET_PARAMS,  # 네트워크 클래스가 요구하는 추가 파라미터 포함
-        "grid_array": ADDITIONAL_NET_PARAMS["grid_array"]  # grid_array 추가
-    },
+# network-related parameters
+net=NetParams(
+    additional_params=ADDITIONAL_NET_PARAMS,
+    traffic_lights=traffic_lights  # traffic_lights를 여기에 추가
 ),
 
-
-    # vehicles to be placed in the network at the start of a rollout (see
-    # flow.core.params.VehicleParams)
-    veh=vehicles,
-
-    # 신호등 설정 반영
-    traffic_lights=traffic_lights
-)
+# vehicles to be placed in the network at the start of a rollout
+veh=vehicles
 
 network = FigureEightNetwork(
     name="figure_eight",
     vehicles=vehicles,
     net_params=NetParams(
         additional_params=ADDITIONAL_NET_PARAMS
-    ),
-    traffic_lights=traffic_lights  # 이 부분을 추가
+    )
 )
 
 # 네트워크 정보 출력
