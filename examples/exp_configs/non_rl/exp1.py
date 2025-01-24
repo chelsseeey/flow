@@ -25,7 +25,7 @@ vehicles.add(
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
-        decel=1.5,
+        decel=2.5,
     ),
     num_vehicles=1  # RL 차량 1대
 )
@@ -38,7 +38,7 @@ vehicles.add(
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
-        decel=1.5,
+        decel=2.5,
     ),
     initial_speed=0,
     num_vehicles=13
