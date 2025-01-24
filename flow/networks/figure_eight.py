@@ -189,11 +189,15 @@ class FigureEightNetwork(Network):
             conn += [{"from": "bottom",
                       "to": "top",
                       "fromLane": str(i),
-                      "toLane": str(i)}]
+                      "toLane": str(i),
+                      "signal_group": 1  # First signal group (matches with "GrGr")
+                      }]
             conn += [{"from": "right",
                       "to": "left",
                       "fromLane": str(i),
-                      "toLane": str(i)}]
+                      "toLane": str(i),
+                      "signal_group": 2  # Second signal group (matches with "rGrG")
+                      }]
         conn_dict["center"] = conn
         return conn_dict
 
