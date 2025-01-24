@@ -146,12 +146,19 @@ class AccelEnv(Env):
                     (self.absolute_position.get(veh_id, this_pos) + change) \
                     % self.k.network.length()
                 self.prev_pos[veh_id] = this_pos
-    
+                
+    # RL 차량 색상 설정
+    rl_ids = self.k.vehicle.get_rl_ids()  # RL 차량 ID 가져오기
+    for rl_id in rl_ids:
+        self.k.vehicle.set_color(rl_id, color=(255, 0, 0))  # 빨간색
+
     # 신호등 상태 디버깅 추가
     try:
         print("Traffic light states:", self.k.traffic_light.get_state("center"))
     except Exception as e:
         print(f"Error retrieving traffic light state: {e}")
+
+        
 
     @property
     def sorted_ids(self):
