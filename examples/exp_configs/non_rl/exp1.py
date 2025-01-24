@@ -7,6 +7,7 @@ average speed of vehicles in the network.
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, GridRouter
 from flow.core.params import SumoParams, EnvParams, NetParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
+from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent.custom_traffic_light_figure_eight import TrafficLightFigureEightEnv  # 커스텀 Env 임포트
 from flow.networks import FigureEightNetwork
@@ -41,7 +42,6 @@ vehicles.add(
     lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=0,
         decel=3.0,
     ),
     initial_speed=0,
