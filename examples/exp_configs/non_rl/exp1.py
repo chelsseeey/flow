@@ -33,12 +33,12 @@ traffic_lights.add(
     node_id="center",  # Figure Eight의 교차점 노드
     tls_type="static",  # 고정 주기 신호등
     phases=[
-        {"duration": "15", "state": "GrGr"},  # 가로 초록
-        {"duration": "3", "state": "yrGr"},   # 가로 노랑
-        {"duration": "2", "state": "rrrr"},   # 모두 빨강
-        {"duration": "15", "state": "rGrG"},  # 세로 초록
-        {"duration": "3", "state": "ryrG"},   # 세로 노랑
-        {"duration": "2", "state": "rrrr"}    # 모두 빨강
+        {"duration": 15, "state": "GrGr"},  # 가로 초록
+        {"duration": 3, "state": "yrGr"},   # 가로 노랑
+        {"duration": 2, "state": "rrrr"},   # 모두 빨강
+        {"duration": 15, "state": "rGrG"},  # 세로 초록
+        {"duration": 3, "state": "ryrG"},   # 세로 노랑
+        {"duration": 2, "state": "rrrr"}    # 모두 빨강
     ]
 )
 
