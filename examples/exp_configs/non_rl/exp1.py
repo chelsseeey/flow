@@ -81,7 +81,7 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-print(f"Traffic light parameters: {flow_params['traffic_lights']}")
+print(f"Traffic light parameters: {flow_params['tls']}")
 
 # flow_params 딕셔너리 출력
 print("Flow parameters:", flow_params)
