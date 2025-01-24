@@ -214,22 +214,6 @@ class FigureEightNetwork(Network):
 
         return edgestarts
 
-    def specify_tll(self, net_params):
-        """Define traffic light program"""
-        return [{
-            "id": "center",
-            "type": "static",
-            "programID": "1",
-            "phases": [
-                {"duration": "10", "state": "GrGr"},
-                {"duration": "3", "state": "yrGr"},
-                {"duration": "2", "state": "rrrr"},
-                {"duration": "10", "state": "rGrG"},
-                {"duration": "3", "state": "ryrG"},
-                {"duration": "2", "state": "rrrr"}
-            ]
-        }]
-
     def specify_internal_edge_starts(self):
         """See base class."""
         internal_edgestarts = [
