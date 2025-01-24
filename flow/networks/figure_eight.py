@@ -181,25 +181,29 @@ class FigureEightNetwork(Network):
         return rts
 
     def specify_connections(self, net_params):
-        """See parent class."""
+        """신호 그룹이 있는 연결 정의"""
         lanes = net_params.additional_params["lanes"]
         conn_dict = {}
+
+        def new_con(from_edge, to_edge, lane, signal_group):
+            return [{
+                "from": from_edge,
+                "to": to_edge,
+                "fromLane": str(lane),
+                "toLane": str(lane),
+                "signal_group": signal_group
+            }]
+
         conn = []
         for i in range(lanes):
-            conn += [{"from": "bottom",
-                      "to": "top",
-                      "fromLane": str(i),
-                      "toLane": str(i),
-                      "signal_group": 1  # First signal group (matches with "GrGr")
-                      }]
-            conn += [{"from": "right",
-                      "to": "left",
-                      "fromLane": str(i),
-                      "toLane": str(i),
-                      "signal_group": 2  # Second signal group (matches with "rGrG")
-                      }]
+            # 남북 방향
+            conn += new_con("bottom", "top", i, 1)
+            # 동서 방향
+            conn += new_con("right", "left", i, 2)
+        
         conn_dict["center"] = conn
         return conn_dict
+    
 
     def specify_edge_starts(self):
         """See base class."""
