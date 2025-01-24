@@ -32,7 +32,7 @@ traffic_lights = TrafficLightParams(baseline=False)
 traffic_lights.add(
     node_id="center",  # Figure Eight의 교차점 노드
     tls_type="static",  # 고정 주기 신호등
-    programID="1",     # Add programID explicitly
+    programID=1,     # Add programID explicitly
     phases=[
         {"duration": 10, "state": "GrGr"},  # 가로 초록
         {"duration": 3, "state": "yrGr"},   # 가로 노랑
@@ -81,3 +81,5 @@ flow_params = dict(
     # 신호등 설정 반영
     traffic_lights=traffic_lights
 )
+
+print(f"Traffic light parameters: {flow_params['traffic_lights']}")

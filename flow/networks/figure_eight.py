@@ -202,6 +202,7 @@ class FigureEightNetwork(Network):
             conn += new_con("right", "left", i, 2)
         
         conn_dict["center"] = conn
+        print(f"Connections for center: {conn_dict['center']}")  # 디버깅 추가
         return conn_dict
     
 
