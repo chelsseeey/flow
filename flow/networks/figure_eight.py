@@ -230,3 +230,19 @@ class FigureEightNetwork(Network):
              + 2 * self.junction_len + 3 * self.inner_space_len)]
 
         return internal_edgestarts
+    
+    def specify_tll(self, net_params):
+        """신호등 프로그램 정의"""
+        return [{
+            "id": "center",
+            "type": "static",
+            "programID": "1",  # exp1.py의 설정과 매칭
+            "phase": [
+                {"duration": "10", "state": "GrGr"},
+                {"duration": "3", "state": "yrGr"},
+                {"duration": "2", "state": "rrrr"},
+                {"duration": "10", "state": "rGrG"},
+                {"duration": "3", "state": "ryrG"},
+                {"duration": "2", "state": "rrrr"}
+            ]
+        }]
