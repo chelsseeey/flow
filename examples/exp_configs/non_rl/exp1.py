@@ -12,6 +12,7 @@ from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs import AccelEnv
 from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams  # 신호등 설정 추가
+from flow.controllers.rlcontroller import RLController
 
 
 vehicles = VehicleParams()
@@ -19,8 +20,8 @@ vehicles = VehicleParams()
 # RL 차량 추가 (1대)
 vehicles.add(
     veh_id="rl",
-    acceleration_controller=(IDMController, {}),
-    lane_change_controller=(StaticLaneChanger, {}),
+    acceleration_controller=(RLController, {}),  # RLController 추가
+    lane_change_controller=(RLController, {}),  # 필요 시 RL 컨트롤러로 변경
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
