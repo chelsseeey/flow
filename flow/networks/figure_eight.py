@@ -237,7 +237,7 @@ class FigureEightNetwork(Network):
             "id": "center",
             "type": "static",
             "programID": "1",  # exp1.py의 설정과 매칭
-            "phase": [
+            "phases": [
                 {"duration": "10", "state": "GrGr"},
                 {"duration": "3", "state": "yrGr"},
                 {"duration": "2", "state": "rrrr"},
