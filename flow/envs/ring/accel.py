@@ -146,6 +146,7 @@ class AccelEnv(Env):
                     (self.absolute_position.get(veh_id, this_pos) + change) \
                     % self.k.network.length()
                 self.prev_pos[veh_id] = this_pos
+    
     # 신호등 상태 디버깅 추가
     try:
         print("Traffic light states:", self.k.traffic_light.get_state("center"))

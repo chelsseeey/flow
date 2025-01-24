@@ -78,7 +78,10 @@ flow_params = dict(
     veh=vehicles,
 
     # 신호등 설정 반영
-    traffic_lights=traffic_lights
+    tls=traffic_lights
 )
 
 print(f"Traffic light parameters: {flow_params['traffic_lights']}")
+
+# flow_params 딕셔너리 출력
+print("Flow parameters:", flow_params)
