@@ -380,6 +380,7 @@ class Env(gym.Env, metaclass=ABCMeta):
 
             # stop collecting new simulation steps if there is a collision
             if crash:
+                print(f"Simulation crashed at time step: {self.time_counter}")
                 break
 
             # render a frame
@@ -399,6 +400,16 @@ class Env(gym.Env, metaclass=ABCMeta):
         done = (self.time_counter >= self.env_params.sims_per_step *
                 (self.env_params.warmup_steps + self.env_params.horizon)
                 or crash)
+
+        # 종료 조건 디버깅
+        if done:
+            if crash:
+                print("Termination reason: Collision occurred.")
+            elif self.time_counter >= self.env_params.sims_per_step * (
+                    self.env_params.warmup_steps + self.env_params.horizon):
+                print("Termination reason: Time horizon reached.")
+            else:
+                print("Termination reason: Unknown.")
 
         # compute the info for each agent
         infos = {}
