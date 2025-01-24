@@ -21,7 +21,7 @@ vehicles = VehicleParams()
 vehicles.add(
     veh_id="rl",
     acceleration_controller=(RLController, {}),  # RLController 추가
-    lane_change_controller=(RLController, {}),  # 필요 시 RL 컨트롤러로 변경
+    lane_change_controller=(StaticLaneChanger, {}),  # 필요 시 RL 컨트롤러로 변경
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
