@@ -113,15 +113,11 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-# 환경 생성 및 등록
-create_env, env_name = make_create_env(params=flow_params, version=0)
-register_env(env_name, create_env)
-
-if env_name not in gym.envs.registry.env_specs:
+# 환경이 이미 등록되어 있는지 확인 후 등록
+env_id = "MultiAgentAccelPOEnv-v0"
+if env_id not in gym.envs.registry.env_specs:
+    create_env, env_name = make_create_env(params=flow_params, version=0)
     register_env(env_name, create_env)
-
-# 환경 인스턴스 생성
-env = create_env()
 
 # PPOTrainer를 사용하여 RL 학습을 진행
 trainer = PPOTrainer(env=env_name, config={
