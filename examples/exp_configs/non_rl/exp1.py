@@ -4,6 +4,7 @@ Right-of-way dynamics near the intersection causes vehicles to queue up on
 either side of the intersection, leading to a significant reduction in the
 average speed of vehicles in the network.
 """
+import ray
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.tune.registry import register_env
 from flow.utils.registry import make_create_env
@@ -18,6 +19,8 @@ from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams  # 신호등 설정 추가
 from flow.controllers.rlcontroller import RLController
 
+# Ray 초기화 (중복 실행 방지)
+ray.init(ignore_reinit_error=True)
 
 vehicles = VehicleParams()
 
@@ -109,8 +112,12 @@ flow_params = dict(
     tls=traffic_lights
 )
 
+# 환경 생성 및 등록
 create_env, env_name = make_create_env(params=flow_params, version=0)
 register_env(env_name, create_env)
+
+# 환경 인스턴스 생성
+env = create_env()
 
 # PPOTrainer를 사용하여 RL 학습을 진행
 trainer = PPOTrainer(env=env_name, config={
@@ -120,8 +127,12 @@ trainer = PPOTrainer(env=env_name, config={
 # RL 학습을 10번 반복 실행
 for i in range(10):
     result = trainer.train()
-    print(f"Iteration {i}, reward: {result['episode_reward_mean']}")
+    mean_reward = result.get("episode_reward_mean", 0)  # 에러 방지
+    print(f"Iteration {i}, reward: {mean_reward}")
 
+# 학습된 정책 저장
+checkpoint_path = trainer.save()
+print(f"{checkpoint_path}")
 
 print(f"Traffic light parameters: {flow_params['tls']}")
 
