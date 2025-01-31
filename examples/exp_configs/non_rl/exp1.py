@@ -23,7 +23,7 @@ TARGET_VELOCITY = 20  # 목표 속도 (m/s)
 MAX_ACCEL = 3  # RL 차량 최대 가속도
 MAX_DECEL = 3  # RL 차량 최대 감속도
 
-NUM_AUTOMATED = 2  # RL 차량 개수 (1, 2, 7, 14 중 선택 가능)
+NUM_AUTOMATED = 1  # RL 차량 개수 (1, 2, 7, 14 중 선택 가능)
 assert NUM_AUTOMATED in [1, 2, 7, 14], "NUM_AUTOMATED 값이 유효하지 않습니다."
 
 # 🚀 Ray 초기화 (중복 실행 방지)
@@ -47,7 +47,6 @@ for i in range(NUM_AUTOMATED):
     )
 
 # 기존 IDM 차량 추가
-num_human = 14 - NUM_AUTOMATED  # 전체 차량 수가 14대이므로, 남은 차량은 IDM 차량
 vehicles.add(
     veh_id="idm",
     acceleration_controller=(IDMController, {}),
@@ -58,7 +57,7 @@ vehicles.add(
         decel=2.5,
     ),
     initial_speed=0,
-    num_vehicles=num_human
+    num_vehicles=13
 )
 
 # 신호등 설정 추가
@@ -97,7 +96,7 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-# ✅ 환경이 이미 등록되어 있는지 확인 후 등록
+# 환경이 이미 등록되어 있는지 확인 후 등록
 env_id = "MultiAgentAccelPOEnv-v0"
 if env_id not in gym.envs.registry.env_specs:
     create_env, env_name = make_create_env(params=flow_params, version=0)
