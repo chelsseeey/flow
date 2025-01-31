@@ -51,10 +51,10 @@ traffic_lights.add(
     tls_type="static",  # 고정 주기 신호등
     programID="1",  # 프로그램 ID
     phases=[
-        {"duration": "5", "state": "GrGr"},  # 가로 초록
+        {"duration": "10", "state": "GrGr"},  # 가로 초록
         {"duration": "3", "state": "yrGr"},   # 가로 노랑
         {"duration": "2", "state": "rrrr"},   # 모두 빨강
-        {"duration": "5", "state": "rGrG"},  # 세로 초록
+        {"duration": "10", "state": "rGrG"},  # 세로 초록
         {"duration": "3", "state": "ryrG"},   # 세로 노랑
         {"duration": "2", "state": "rrrr"}    # 모두 빨강
     ]
