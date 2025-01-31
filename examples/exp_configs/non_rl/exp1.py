@@ -119,7 +119,7 @@ for i in range(10):
     rollout_len = result["timesteps_total"]  # 현재까지 실행된 전체 Rollout 단계 수
     mean_reward = result.get("episode_reward_mean", 0)  # 평균 보상
 
-    print(f"Iteration {iter_num}, Total Rollouts: {rollout_len}, Reward: {mean_reward}")
+    print(f"Iteration {iter_num}, Total Timesteps: {rollout_len}, Reward: {mean_reward}")
 
 
 # 학습된 정책 저장
