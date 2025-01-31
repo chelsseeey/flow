@@ -4,6 +4,7 @@ Right-of-way dynamics near the intersection causes vehicles to queue up on
 either side of the intersection, leading to a significant reduction in the
 average speed of vehicles in the network.
 """
+import gym 
 import ray
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.tune.registry import register_env
