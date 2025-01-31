@@ -101,9 +101,12 @@ class MultiEnv(MultiAgentEnv, Env):
             # crash encodes whether the simulator experienced a collision
             crash = self.k.simulation.check_collision()
 
-            # stop collecting new simulation steps if there is a collision
+            # 충돌 발생 시 로그 출력 (하지만 종료하지 않음)
             if crash:
-                break
+                print(f"Collision detected at time step {self.time_counter}.")
+
+            # 화면 렌더링
+            self.render()
 
         states = self.get_state()
         done = {key: key in self.k.vehicle.get_arrived_ids()
