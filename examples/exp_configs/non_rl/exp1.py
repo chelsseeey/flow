@@ -17,7 +17,7 @@ from flow.core.params import TrafficLightParams  # 신호등 설정 추가
 # 🚀 RL 학습 파라미터 설정
 HORIZON = 1500  # 한 번의 rollout이 지속되는 시간 (step)
 N_ROLLOUTS = 20  # 한 번의 학습 iteration 동안 실행되는 rollout 개수
-N_CPUS = 2  # 병렬 실행할 작업자 수
+N_CPUS = 1  # 병렬 실행할 작업자 수
 
 TARGET_VELOCITY = 20  # 목표 속도 (m/s)
 MAX_ACCEL = 3  # RL 차량 최대 가속도
@@ -104,7 +104,7 @@ if env_id not in gym.envs.registry.env_specs:
 
 # 🚀 PPOTrainer로 RL 학습 실행
 trainer = PPOTrainer(env=env_name, config={
-    "num_workers": N_CPUS,
+    "num_workers": 0,
     "train_batch_size": HORIZON * N_ROLLOUTS,
     "sgd_minibatch_size": 256,
     "num_sgd_iter": 10,
