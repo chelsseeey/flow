@@ -21,7 +21,7 @@ N_CPUS = 1  # 병렬 실행할 작업자 수
 
 TARGET_VELOCITY = 20  # 목표 속도 (m/s)
 MAX_ACCEL = 3  # RL 차량 최대 가속도
-MAX_DECEL = 3  # RL 차량 최대 감속도
+MAX_DECEL = 1.5  # RL 차량 최대 감속도
 
 NUM_AUTOMATED = 1  # RL 차량 개수 (1, 2, 7, 14 중 선택 가능)
 assert NUM_AUTOMATED in [1, 2, 7, 14], "NUM_AUTOMATED 값이 유효하지 않습니다."
@@ -121,7 +121,7 @@ for i in range(10):
 
     print(f"Iteration {iter_num}, Total Rollouts: {rollout_len}, Reward: {mean_reward}")
 
-    
+
 # 학습된 정책 저장
 checkpoint_path = trainer.save()
 print(f"Checkpoint saved at {checkpoint_path}")
