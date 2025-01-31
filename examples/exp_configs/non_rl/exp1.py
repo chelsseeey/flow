@@ -113,9 +113,15 @@ trainer = PPOTrainer(env=env_name, config={
 # RL 학습 10회 반복
 for i in range(10):
     result = trainer.train()
-    mean_reward = result.get("episode_reward_mean", 0)  # 에러 방지
-    print(f"Iteration {i}, reward: {mean_reward}")
 
+    # 현재 Iteration 및 Rollout 정보 출력
+    iter_num = result["training_iteration"]  # 현재 Iteration 번호
+    rollout_len = result["timesteps_total"]  # 현재까지 실행된 전체 Rollout 단계 수
+    mean_reward = result.get("episode_reward_mean", 0)  # 평균 보상
+
+    print(f"Iteration {iter_num}, Total Rollouts: {rollout_len}, Reward: {mean_reward}")
+
+    
 # 학습된 정책 저장
 checkpoint_path = trainer.save()
 print(f"Checkpoint saved at {checkpoint_path}")
