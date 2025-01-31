@@ -109,7 +109,6 @@ trainer = PPOTrainer(env=env_name, config={
     "train_batch_size": HORIZON * N_ROLLOUTS,
     "sgd_minibatch_size": 256,
     "num_sgd_iter": 10,
-    "rollout_fragment_length": HORIZON,
 })
 
 # RL 학습 10회 반복
