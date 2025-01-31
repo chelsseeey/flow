@@ -115,7 +115,6 @@ register_env(env_name, create_env)
 # PPOTrainer를 사용하여 RL 학습을 진행
 trainer = PPOTrainer(env=env_name, config={
     "num_workers": 1,  # 병렬 작업자 수
-    "framework": "tf",  # TensorFlow 사용
 })
 
 # RL 학습을 10번 반복 실행
