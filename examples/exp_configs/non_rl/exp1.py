@@ -4,12 +4,16 @@ Right-of-way dynamics near the intersection causes vehicles to queue up on
 either side of the intersection, leading to a significant reduction in the
 average speed of vehicles in the network.
 """
+from ray.rllib.agents.ppo import PPOTrainer
+from ray.tune.registry import register_env
+from flow.utils.registry import make_create_env
+
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter
 from flow.core.params import SumoParams, EnvParams, NetParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
-from flow.envs import AccelEnv
+from flow.envs.multiagent import MultiAgentAccelPOEnv
 from flow.networks import FigureEightNetwork
 from flow.core.params import TrafficLightParams  # 신호등 설정 추가
 from flow.controllers.rlcontroller import RLController
@@ -25,7 +29,8 @@ vehicles.add(
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
-        decel=2.5,
+        accel=3,   # 최대 가속도
+        decel=3,   # 최대 감속도
     ),
     num_vehicles=1  # RL 차량 1대
 )
@@ -62,10 +67,10 @@ traffic_lights.add(
 
 flow_params = dict(
     # name of the experiment
-    exp_tag='figure8_with_lights',  # 실험 이름 변경
+    exp_tag='figure8_with_rl',  # 실험 이름 변경
 
     # name of the flow environment the experiment is running on
-    env_name=AccelEnv,
+    env_name=MultiAgentAccelPOEnv,
 
     # name of the network class the experiment is running on
     network=FigureEightNetwork,
@@ -82,7 +87,12 @@ flow_params = dict(
     # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
         horizon=100000000,
-        additional_params=ADDITIONAL_ENV_PARAMS.copy(),
+        additional_params={
+            "target_velocity": 20,  # 목표 속도
+            "max_accel": 3,         # 최대 가속도
+            "max_decel": 3,         # 최대 감속도
+            "sort_vehicles": False
+        },
     ),
 
     # network-related parameters (see flow.core.params.NetParams and the
@@ -98,6 +108,21 @@ flow_params = dict(
     # 신호등 설정 반영
     tls=traffic_lights
 )
+
+create_env, env_name = make_create_env(params=flow_params, version=0)
+register_env(env_name, create_env)
+
+# PPOTrainer를 사용하여 RL 학습을 진행
+trainer = PPOTrainer(env=env_name, config={
+    "num_workers": 1,  # 병렬 작업자 수
+    "framework": "tf",  # TensorFlow 사용
+})
+
+# RL 학습을 10번 반복 실행
+for i in range(10):
+    result = trainer.train()
+    print(f"Iteration {i}, reward: {result['episode_reward_mean']}")
+
 
 print(f"Traffic light parameters: {flow_params['tls']}")
 
