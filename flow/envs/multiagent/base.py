@@ -109,8 +109,6 @@ class MultiEnv(MultiAgentEnv, Env):
             self.render()
 
         states = self.get_state()
-
-        
         done = {key: key in self.k.vehicle.get_arrived_ids()
                 for key in states.keys()}
         if crash or (self.time_counter >= self.env_params.sims_per_step *

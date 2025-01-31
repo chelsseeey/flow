@@ -81,7 +81,7 @@ flow_params = dict(
     env_name=MultiAgentAccelPOEnv,
     network=FigureEightNetwork,
     simulator='traci',
-    sim=SumoParams(render=True, sim_step=0.1),
+    sim=SumoParams(render=False, sim_step=0.1),
     env=EnvParams(
         horizon=HORIZON,
         additional_params={
@@ -102,7 +102,7 @@ if env_id not in gym.envs.registry.env_specs:
     create_env, env_name = make_create_env(params=flow_params, version=0)
     register_env(env_name, create_env)
 
-# 🚀 PPOTrainer로 RL 학습 실행
+# PPOTrainer로 RL 학습 실행
 trainer = PPOTrainer(env=env_name, config={
     "num_workers": 0,
     "train_batch_size": HORIZON * N_ROLLOUTS,
