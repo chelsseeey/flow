@@ -2,18 +2,14 @@
 """
 Example script (exp2.py) that sets up a Flow experiment configuration
 and then calls train.py's train_rllib() to run the RL training.
+Usage:
+    python exp2.py
 """
 
 import os
 import sys
-from flow.core.params import (
-    SumoParams,
-    EnvParams,
-    NetParams,
-    VehicleParams,
-    SumoCarFollowingParams,
-    TrafficLightParams
-)
+from flow.core.params import (SumoParams, EnvParams, NetParams, VehicleParams,
+                              SumoCarFollowingParams, TrafficLightParams)
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.envs.multiagent import MultiAgentAccelPOEnv
 from flow.networks.figure_eight import FigureEightNetwork, ADDITIONAL_NET_PARAMS
@@ -23,30 +19,25 @@ from flow.utils.registry import make_create_env
 from train import train_rllib, parse_args
 
 print("[DEBUG] exp2.py is running.")
-# ---------------------------
-# Module-level experiment configuration
-# ---------------------------
 
-# Experiment tag
+# ---------------------------
+# Module-level experiment configuration (only parameter definitions)
+# ---------------------------
 exp_tag = "figure8_with_rl"
 
-# Flow parameters
 flow_params = dict(
     exp_tag=exp_tag,
     env_name=MultiAgentAccelPOEnv,
     network=FigureEightNetwork,
     simulator='traci',
-    sim=SumoParams(
-        render=False,      # Disable GUI rendering for faster training
-        sim_step=0.1,      # Simulation time step in seconds
-    ),
+    sim=SumoParams(render=False, sim_step=0.1),
     env=EnvParams(
-        horizon=1500,  # Number of steps per rollout
+        horizon=1500,
         additional_params={
-            "target_velocity": 20,   # Target velocity (m/s)
-            "max_accel": 3,          # Maximum acceleration (m/s²)
-            "max_decel": 1.5,        # Maximum deceleration (m/s²)
-            "sort_vehicles": False   # Do not sort vehicles by ID
+            "target_velocity": 20,
+            "max_accel": 3,
+            "max_decel": 1.5,
+            "sort_vehicles": False
         },
     ),
     net=NetParams(additional_params=ADDITIONAL_NET_PARAMS.copy()),
@@ -54,33 +45,30 @@ flow_params = dict(
     tls=TrafficLightParams(baseline=False)
 )
 
-# Training parameters
-N_CPUS = 1         # Number of CPUs (workers) to use
-N_ROLLOUTS = 20    # Number of rollouts per training iteration
+N_CPUS = 1
+N_ROLLOUTS = 20
 
 # --- Define Vehicles ---
-# Add RL-controlled vehicle
 flow_params["veh"].add(
     veh_id="rl",
     acceleration_controller=(RLController, {}),
     lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=31,  # SUMO speed mode (allows some collisions)
+        speed_mode=31,
         accel=3,
         decel=1.5,
     ),
     num_vehicles=1
 )
 
-# Add IDM-controlled vehicles
 flow_params["veh"].add(
     veh_id="idm",
     acceleration_controller=(IDMController, {}),
     lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=0,   # Default speed mode (prevents collisions)
+        speed_mode=0,
         decel=2.5,
     ),
     initial_speed=0,
@@ -94,11 +82,11 @@ flow_params["tls"].add(
     programID="1",
     phases=[
         {"duration": "10", "state": "GrGr"},
-        {"duration": "3",  "state": "yrGr"},
-        {"duration": "2",  "state": "rrrr"},
+        {"duration": "3", "state": "yrGr"},
+        {"duration": "2", "state": "rrrr"},
         {"duration": "10", "state": "rGrG"},
-        {"duration": "3",  "state": "ryrG"},
-        {"duration": "2",  "state": "rrrr"}
+        {"duration": "3", "state": "ryrG"},
+        {"duration": "2", "state": "rrrr"}
     ]
 )
 
@@ -121,40 +109,38 @@ flow_params.update({
 # Define a simple Flags class for training arguments
 # ---------------------------
 class Flags:
-    exp_config = exp_tag          # Name of the experiment configuration
-    rl_trainer = "rllib"          # Trainer to use (here: "rllib")
-    num_cpus = N_CPUS             # Number of CPUs to use
-    num_steps = 10                # Total number of training iterations
-    rollout_size = N_ROLLOUTS     # Number of rollouts per training iteration
-    checkpoint_path = None        # Path to restore training from (if any)
-    ray_memory = 200 * 1024 * 1024  # Ray 메모리 설정 추가
+    exp_config = exp_tag
+    rl_trainer = "rllib"
+    num_cpus = N_CPUS
+    num_steps = 10
+    rollout_size = N_ROLLOUTS
+    checkpoint_path = None
+    ray_memory = 200 * 1024 * 1024
 
 flags = Flags()
 
 # ---------------------------
 # Create a simple namespace object to hold experiment settings
 # ---------------------------
-# Since train.py's train_rllib() expects an object with attributes:
-# flow_params, N_CPUS, N_ROLLOUTS, and (optionally) exp_tag,
-# we create an empty object and attach these attributes.
-ExpConfig = type("ExpConfig", (), {})()  # Create an empty object
+ExpConfig = type("ExpConfig", (), {})()
 ExpConfig.flow_params = flow_params
 ExpConfig.N_CPUS = N_CPUS
 ExpConfig.N_ROLLOUTS = N_ROLLOUTS
 ExpConfig.exp_tag = exp_tag
 
 # ---------------------------
-# Main function: call train_rllib() from train.py
+# Main function: environment initialization and training execution
 # ---------------------------
 def main():
     print("[DEBUG] Entering main() in exp2.py.")
-    try:
-        train_rllib(ExpConfig, flags)
-    except Exception as e:
-        print("[ERROR] Exception in main():", e)
+    # Environment registration should be done here, not at module level.
+    env_id = "MultiAgentAccelPOEnv-v0"
+    from flow.utils.registry import register_env, make_create_env
+    if env_id not in gym.envs.registry.env_specs:
+        create_env, env_name = make_create_env(params=flow_params, version=0)
+        register_env(env_name, create_env)
+    print("[DEBUG] Environment registered. Now starting training.")
+    train_rllib(ExpConfig, flags)
 
 if __name__ == "__main__":
-    # Add parent directory to Python path
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-    print("[DEBUG] Running exp2.py directly")
     main()
