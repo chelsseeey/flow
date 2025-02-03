@@ -103,6 +103,21 @@ flow_params["tls"].add(
     ]
 )
 
+# --- Add RL configuration ---
+flow_params.update({
+    "algorithm": "PPO",
+    "model": {"fcnet_hiddens": [32, 32, 32]},
+    "gamma": 0.999,
+    "lambda": 0.97,
+    "kl_target": 0.02,
+    "num_sgd_iter": 10,
+    "multiagent": {
+        "policies": None,
+        "policy_mapping_fn": None,
+        "policies_to_train": None
+    }
+})
+
 # ---------------------------
 # Define a simple Flags class for training arguments
 # ---------------------------

@@ -140,18 +140,27 @@ class Experiment:
             vel = []
             custom_vals = {key: [] for key in self.custom_callables.keys()}
             state = self.env.reset()
+            
             for j in range(num_steps):
                 t0 = time.time()
                 state, reward, done, _ = self.env.step(rl_actions(state))
                 t1 = time.time()
                 times.append(1 / (t1 - t0))
 
-                # Compute the velocity speeds and cumulative returns.
+                # Compute the velocity speeds
                 veh_ids = self.env.k.vehicle.get_ids()
                 vel.append(np.mean(self.env.k.vehicle.get_speed(veh_ids)))
-                ret += reward
+                
+                # Handle different reward types
+                if isinstance(reward, dict):
+                    step_reward = sum(reward.values())
+                elif isinstance(reward, (int, float)):
+                    step_reward = reward
+                else:
+                    raise TypeError(f"Unexpected reward type: {type(reward)}")
+                ret += step_reward
 
-                # Compute the results for the custom callables.
+                # Compute the results for the custom callables
                 for (key, lambda_func) in self.custom_callables.items():
                     custom_vals[key].append(lambda_func(self.env))
 
