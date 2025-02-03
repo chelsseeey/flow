@@ -147,16 +147,29 @@ ExpConfig.exp_tag = exp_tag
 # Main function: call train_rllib() from train.py
 # ---------------------------
 def main():
-    print("Starting training...")
-    print(f"Horizon: {flow_params['env'].horizon}")
-    print(f"Number of steps: {flags.num_steps}")
-    print(f"Number of rollouts: {N_ROLLOUTS}")
+    # Force immediate print
+    import sys
+    sys.stdout.flush()
+    
+    print("="*50)
+    print("DEBUG: Starting main function")
+    print(f"DEBUG: Horizon = {flow_params['env'].horizon}")
+    print(f"DEBUG: Steps = {flags.num_steps}")
+    print(f"DEBUG: Rollouts = {N_ROLLOUTS}")
+    sys.stdout.flush()
     
     try:
+        print("DEBUG: About to call train_rllib")
+        sys.stdout.flush()
         result = train_rllib(ExpConfig, flags)
-        print(f"Training result: {result}")
+        print(f"DEBUG: Training completed, result = {result}")
     except Exception as e:
-        print(f"Error during training: {e}")
+        print(f"DEBUG: Error occurred: {e}")
+    
+    print("="*50)
+    sys.stdout.flush()
 
 if __name__ == "__main__":
+    print("DEBUG: Starting script")
+    sys.stdout.flush()
     main()
