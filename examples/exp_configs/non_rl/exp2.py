@@ -6,12 +6,6 @@ and then calls train.py's train_rllib() to run the RL training.
 
 import os
 import sys
-
-if __name__ == "__main__":
-    # Add parent directory to Python path
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
-# Flow imports
 from flow.core.params import (
     SumoParams,
     EnvParams,
@@ -153,13 +147,11 @@ ExpConfig.exp_tag = exp_tag
 # Main function: call train_rllib() from train.py
 # ---------------------------
 def main():
-    # Optionally, you could also parse command-line arguments:
-    # flags = parse_args(sys.argv[1:])
     print("[DEBUG] Entering main() in exp2.py.")
     train_rllib(ExpConfig, flags)
 
-
 if __name__ == "__main__":
+    # Add parent directory to Python path
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    print("[DEBUG] Running exp2.py directly")
     main()
-
-
