@@ -180,8 +180,9 @@ def setup_exps_rllib(flow_params,
 def train_rllib(submodule, flags):
     """Train policies using the PPO algorithm in RLlib."""
     import ray
-    from ray.tune import run_experiments
+    from ray.rllib.agents.ppo import PPOTrainer
 
+    # Flow 설정 정보 가져오기
     flow_params = submodule.flow_params
     n_cpus = submodule.N_CPUS
     n_rollouts = submodule.N_ROLLOUTS
@@ -189,33 +190,30 @@ def train_rllib(submodule, flags):
     policy_mapping_fn = getattr(submodule, "policy_mapping_fn", None)
     policies_to_train = getattr(submodule, "policies_to_train", None)
 
+    # RLlib 설정 구성: setup_exps_rllib()는 Flow 실험 파라미터를 기반으로 config를 만듭니다.
     alg_run, gym_name, config = setup_exps_rllib(
         flow_params, n_cpus, n_rollouts,
-        policy_graphs, policy_mapping_fn, policies_to_train)
-
-    ray.init(num_cpus=n_cpus + 1, object_store_memory=200 * 1024 * 1024)
-    exp_config = {
-        "run": alg_run,
-        "env": gym_name,
-        "config": {
-            **config
-        },
-        "checkpoint_freq": 20,
-        "checkpoint_at_end": True,
-        "max_failures": 999,
-        "stop": {
-            "training_iteration": flags.num_steps,
-        },
-    }
-
-    if flags.checkpoint_path is not None:
-        exp_config['restore'] = flags.checkpoint_path
-
-    # run_experiments() 실행: verbose를 2 이상으로 설정하면 Iteration 로그가 표시됩니다.
-    run_experiments(
-        {flow_params["exp_tag"]: exp_config},
-        verbose=2  # 0: 최소 로그, 1: 기본, 2: 자세한 Iteration 로그, 3: 더 자세히
+        policy_graphs, policy_mapping_fn, policies_to_train
     )
+
+    # Ray 초기화
+    ray.init(num_cpus=n_cpus + 1, object_store_memory=200 * 1024 * 1024)
+
+    # PPOTrainer 생성
+    trainer = PPOTrainer(env=gym_name, config=config)
+
+    # RL 학습 반복: flags.num_steps 만큼 iteration 실행
+    for i in range(flags.num_steps):
+        result = trainer.train()
+        iter_num = result["training_iteration"]
+        rollout_len = result["timesteps_total"]
+        mean_reward = result.get("episode_reward_mean", 0)
+        print(f"Iteration {iter_num}, Total Timesteps: {rollout_len}, Reward: {mean_reward}")
+
+    # 학습된 정책 저장
+    checkpoint_path = trainer.save()
+    print(f"Checkpoint saved at {checkpoint_path}")
+
 
 
 def train_h_baselines(env_name, args, multiagent):
