@@ -147,22 +147,16 @@ ExpConfig.exp_tag = exp_tag
 # Main function: call train_rllib() from train.py
 # ---------------------------
 def main():
-    # Optionally, you could also parse command-line arguments:
-    # flags = parse_args(sys.argv[1:])
-    train_rllib(ExpConfig, flags)
-
-
-if __name__ == "__main__":
-    main()
-
-
     print("Starting training...")
-    print(f"Horizon: {flow_params['env'].horizon}")  # 에피소드 길이
-    print(f"Number of steps: {flags.num_steps}")     # 총 학습 반복 횟수
-    print(f"Number of rollouts: {N_ROLLOUTS}")      # 각 반복당 롤아웃 수
+    print(f"Horizon: {flow_params['env'].horizon}")
+    print(f"Number of steps: {flags.num_steps}")
+    print(f"Number of rollouts: {N_ROLLOUTS}")
     
     try:
         result = train_rllib(ExpConfig, flags)
-        print(f"Training result: {result}")         # 학습 결과 출력
+        print(f"Training result: {result}")
     except Exception as e:
-        print(f"Error during training: {e}")        # 에러 발생시 출력
+        print(f"Error during training: {e}")
+
+if __name__ == "__main__":
+    main()
