@@ -127,18 +127,35 @@ ExpConfig.exp_tag = exp_tag
 # ---------------------------
 def main():
     print("[DEBUG] Entering main() in exp2.py.")
-    # 환경 등록 및 초기화는 main() 내부에서 수행합니다.
+    
+    # 환경 등록
     from flow.utils.registry import register_env, make_create_env
     import gym
+    
     env_id = "MultiAgentAccelPOEnv-v0"
     if env_id not in gym.envs.registry.env_specs:
         create_env, env_name = make_create_env(params=flow_params, version=0)
         register_env(env_name, create_env)
-        print("[DEBUG] Environment registered:", env_name)
-    else:
-        print("[DEBUG] Environment already registered.")
-    print("[DEBUG] Starting training via train_rllib()")
-    train_rllib(ExpConfig, flags)
+    
+    # PPOTrainer 직접 초기화
+    from ray.rllib.agents.ppo import PPOTrainer
+    
+    trainer = PPOTrainer(env=env_name, config={
+        "num_workers": N_CPUS,
+        "train_batch_size": flow_params['env'].horizon * N_ROLLOUTS,
+        **flow_params.get("algorithm_config", {})
+    })
+    
+    # exp1.py 스타일의 반복 학습
+    print("[DEBUG] Starting training loop")
+    for i in range(flags.num_steps):
+        result = trainer.train()
+        print(f"Iteration {result['training_iteration']}, "
+              f"Total Timesteps: {result['timesteps_total']}, "
+              f"Reward: {result.get('episode_reward_mean', 0)}")
+    
+    checkpoint_path = trainer.save()
+    print(f"Checkpoint saved at {checkpoint_path}")
 
 if __name__ == "__main__":
     main()
