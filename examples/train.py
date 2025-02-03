@@ -184,6 +184,8 @@ def train_rllib(submodule, flags):
     import ray
     from ray.rllib.agents.ppo import PPOTrainer
 
+    print("[DEBUG] Entering train_rllib() function.")
+
     # Flow 설정 정보 가져오기
     flow_params = submodule.flow_params
     n_cpus = submodule.N_CPUS
@@ -199,14 +201,17 @@ def train_rllib(submodule, flags):
     )
 
     # Ray 초기화
+    print("[DEBUG] Initializing Ray with", n_cpus + 1, "CPUs and object_store_memory =", flags.ray_memory)
     ray.init(num_cpus=n_cpus + 1, object_store_memory=flags.ray_memory)
 
     # PPOTrainer 생성
+    print("[DEBUG] Creating PPOTrainer with environment:", gym_name)
     trainer = PPOTrainer(env=gym_name, config=config)
 
     print("Starting RL training loop for", flags.num_steps, "iterations")
     # RL 학습 반복: flags.num_steps 만큼 iteration 실행
     for i in range(flags.num_steps):
+        print(f"[DEBUG] Starting iteration loop {i+1}")
         result = trainer.train()
         iter_num = result["training_iteration"]
         rollout_len = result["timesteps_total"]
