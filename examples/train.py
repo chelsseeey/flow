@@ -210,7 +210,12 @@ def train_rllib(submodule, flags):
 
     if flags.checkpoint_path is not None:
         exp_config['restore'] = flags.checkpoint_path
-    run_experiments({flow_params["exp_tag"]: exp_config})
+
+    # run_experiments() 실행: verbose를 2 이상으로 설정하면 Iteration 로그가 표시됩니다.
+    run_experiments(
+        {flow_params["exp_tag"]: exp_config},
+        verbose=2  # 0: 최소 로그, 1: 기본, 2: 자세한 Iteration 로그, 3: 더 자세히
+    )
 
 
 def train_h_baselines(env_name, args, multiagent):
