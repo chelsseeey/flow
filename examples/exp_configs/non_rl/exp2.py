@@ -148,7 +148,10 @@ ExpConfig.exp_tag = exp_tag
 # ---------------------------
 def main():
     print("[DEBUG] Entering main() in exp2.py.")
-    train_rllib(ExpConfig, flags)
+    try:
+        train_rllib(ExpConfig, flags)
+    except Exception as e:
+        print("[ERROR] Exception in main():", e)
 
 if __name__ == "__main__":
     # Add parent directory to Python path
