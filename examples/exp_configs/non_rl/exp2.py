@@ -154,3 +154,15 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+    print("Starting training...")
+    print(f"Horizon: {flow_params['env'].horizon}")  # 에피소드 길이
+    print(f"Number of steps: {flags.num_steps}")     # 총 학습 반복 횟수
+    print(f"Number of rollouts: {N_ROLLOUTS}")      # 각 반복당 롤아웃 수
+    
+    try:
+        result = train_rllib(ExpConfig, flags)
+        print(f"Training result: {result}")         # 학습 결과 출력
+    except Exception as e:
+        print(f"Error during training: {e}")        # 에러 발생시 출력
