@@ -125,7 +125,7 @@ class Flags:
     exp_config = exp_tag          # Name of the experiment configuration
     rl_trainer = "rllib"          # Trainer to use (here: "rllib")
     num_cpus = N_CPUS             # Number of CPUs to use
-    num_steps = 10                # Total number of training iterations
+    num_steps = 100                # Total number of training iterations
     rollout_size = N_ROLLOUTS     # Number of rollouts per training iteration
     checkpoint_path = None        # Path to restore training from (if any)
 
