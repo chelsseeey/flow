@@ -23,7 +23,7 @@ from flow.utils.registry import make_create_env
 
 # Import train.py's functions
 from train import train_rllib, parse_args
-print(f"[DEBUG] train_rllib imported from: {train_rllib.__module__}")
+
 # ---------------------------
 # Module-level experiment configuration
 # ---------------------------
@@ -150,6 +150,7 @@ ExpConfig.exp_tag = exp_tag
 def main():
     # Optionally, you could also parse command-line arguments:
     # flags = parse_args(sys.argv[1:])
+    print("[DEBUG] Entering main() in exp2.py.")
     train_rllib(ExpConfig, flags)
 
 
