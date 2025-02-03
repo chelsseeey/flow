@@ -23,7 +23,7 @@ from flow.utils.registry import make_create_env
 
 # Import train.py's functions
 from train import train_rllib, parse_args
-
+print("[DEBUG] exp2.py is running.")
 # ---------------------------
 # Module-level experiment configuration
 # ---------------------------
