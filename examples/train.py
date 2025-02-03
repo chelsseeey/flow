@@ -178,7 +178,9 @@ def setup_exps_rllib(flow_params,
 
 
 def train_rllib(submodule, flags):
-    """Train policies using the PPO algorithm in RLlib."""
+    """Train policies using the PPO algorithm in RLlib by directly running a training loop,
+    printing iteration logs.
+    """
     import ray
     from ray.rllib.agents.ppo import PPOTrainer
 
@@ -197,11 +199,12 @@ def train_rllib(submodule, flags):
     )
 
     # Ray 초기화
-    ray.init(num_cpus=n_cpus + 1, object_store_memory=200 * 1024 * 1024)
+    ray.init(num_cpus=n_cpus + 1, object_store_memory=flags.ray_memory)
 
     # PPOTrainer 생성
     trainer = PPOTrainer(env=gym_name, config=config)
 
+    print("Starting RL training loop for", flags.num_steps, "iterations")
     # RL 학습 반복: flags.num_steps 만큼 iteration 실행
     for i in range(flags.num_steps):
         result = trainer.train()
