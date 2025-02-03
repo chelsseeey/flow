@@ -11,14 +11,11 @@ Usage:
 import os
 import sys
 import gym
-from flow.core.params import (
-    SumoParams, EnvParams, NetParams, VehicleParams,
-    SumoCarFollowingParams, TrafficLightParams
-)
-# 모듈 수준에서는 Flow의 환경 클래스나 컨트롤러 등은 임포트하지 않고,
-# 오직 파라미터 정의만 합니다.
+from flow.core.params import (SumoParams, EnvParams, NetParams, VehicleParams,
+                              SumoCarFollowingParams, TrafficLightParams)
+# 모듈 수준에서는 환경 관련 클래스는 나중에 main()에서 임포트합니다.
 
-# Import train.py's functions (자체 수정한 train_rllib() 함수가 최신 버전이어야 함)
+# Import train.py's functions
 from train import train_rllib, parse_args
 
 print("[DEBUG] exp2.py is running.")
@@ -28,16 +25,16 @@ print("[DEBUG] exp2.py is running.")
 # ---------------------------
 exp_tag = "figure8_with_rl"
 
-# Flow 환경 파라미터: 이곳에서는 환경 설정만 정의합니다.
+# Flow 환경 파라미터: 여기서는 설정 값만 정의합니다.
 flow_params = dict(
     exp_tag=exp_tag,
-    # env_name과 network는 문자열로 설정해두고, main()에서 실제 클래스 객체로 대체합니다.
-    env_name="MultiAgentAccelPOEnv",
+    # 기본적으로 문자열로 설정해두지만, 실제 등록 전에 main()에서 업데이트합니다.
+    env_name="MultiAgentAccelPOEnv",  
     network="FigureEightNetwork",
     simulator='traci',
     sim=SumoParams(render=False, sim_step=0.1),
     env=EnvParams(
-        horizon=1500,  # 한 에피소드 당 최대 스텝 수
+        horizon=1500,
         additional_params={
             "target_velocity": 20,
             "max_accel": 3,
@@ -45,7 +42,7 @@ flow_params = dict(
             "sort_vehicles": False
         },
     ),
-    net=NetParams(additional_params={}),  # 나중에 main()에서 추가 net 파라미터로 대체
+    net=NetParams(additional_params={}),  # 이후 main()에서 추가 파라미터 업데이트
     veh=VehicleParams(),
     tls=TrafficLightParams(baseline=False)
 )
@@ -53,10 +50,10 @@ flow_params = dict(
 N_CPUS = 1
 N_ROLLOUTS = 20
 
-# 차량 및 신호등 설정 (모듈 수준에서는 설정만 정의)
+# 차량 및 신호등 설정 (파라미터 정의만)
 flow_params["veh"].add(
     veh_id="rl",
-    acceleration_controller="RLController",  # 문자열 또는 나중에 실제 컨트롤러로 대체
+    acceleration_controller="RLController",  # 나중에 실제 클래스로 대체
     lane_change_controller="StaticLaneChanger",
     routing_controller="ContinuousRouter",
     car_following_params=SumoCarFollowingParams(
@@ -110,7 +107,7 @@ flow_params.update({
 })
 
 # ---------------------------
-# Define a simple Flags class for training arguments (only parameter definitions)
+# Define a simple Flags class for training arguments (설정만)
 # ---------------------------
 class Flags:
     exp_config = exp_tag
@@ -124,7 +121,7 @@ class Flags:
 flags = Flags()
 
 # ---------------------------
-# Create a simple namespace object to hold experiment settings (only parameter definitions)
+# Create a simple namespace object to hold experiment settings (설정만)
 # ---------------------------
 ExpConfig = type("ExpConfig", (), {})()
 ExpConfig.flow_params = flow_params
@@ -137,23 +134,29 @@ ExpConfig.exp_tag = exp_tag
 # ---------------------------
 def main():
     print("[DEBUG] Entering main() in exp2.py.")
-    # Delay Flow module imports until here
+    # 여기서 Flow 관련 모듈을 임포트하여 실제 클래스로 업데이트합니다.
     from flow.envs.multiagent import MultiAgentAccelPOEnv
     from flow.networks.figure_eight import FigureEightNetwork, ADDITIONAL_NET_PARAMS
     from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
     from flow.utils.registry import register_env, make_create_env
     from copy import deepcopy
 
-    # 실제 Flow 클래스 및 추가 파라미터로 업데이트
+    # 실제 환경 클래스와 네트워크 클래스로 업데이트
     flow_params["env_name"] = MultiAgentAccelPOEnv
     flow_params["network"] = FigureEightNetwork
-    flow_params["net"] = NetParams(additional_params=deepcopy(ADDITIONAL_NET_PARAMS))
-    
-    # 실제 컨트롤러로 업데이트 (필요한 경우)
-    # 예를 들어, flow_params["veh"] 객체의 add 메서드가 실제 컨트롤러 클래스를 사용하도록 설정
-    # 여기서는 문자열을 사용한 설정을 그대로 둔다면, train.py 내에서 이를 처리하도록 할 수도 있음.
+    # 추가 파라미터에 "radius_ring"가 필수인 경우 이를 추가합니다.
+    additional_net_params = deepcopy(ADDITIONAL_NET_PARAMS)
+    if "radius_ring" not in additional_net_params:
+        additional_net_params["radius_ring"] = 100  # 적절한 값으로 설정 (예: 100)
+    flow_params["net"] = NetParams(additional_params=additional_net_params)
 
-    # 환경 등록 및 초기화
+    # 실제 컨트롤러도 업데이트 (원하는 경우)
+    flow_params["veh"].update({
+        # 실제 클래스들을 사용하도록 업데이트 가능 (예: RLController 대신 flow.controllers.RLController)
+        # 이 예시에서는 그대로 문자열을 사용하지만, 필요한 경우 실제 클래스로 대체하세요.
+    })
+
+    # 환경 등록 및 초기화 (main() 내부에서 수행)
     env_id = "MultiAgentAccelPOEnv-v0"
     if env_id not in gym.envs.registry.env_specs:
         create_env, env_name = make_create_env(params=flow_params, version=0)
