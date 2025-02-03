@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 """
-Example script (exp1.py) that sets up a Flow experiment configuration
+Example script (exp2.py) that sets up a Flow experiment configuration
 and then calls train.py's train_rllib() to run the RL training.
-
-Usage:
-    python exp1.py
 """
 
+import os
 import sys
+
+if __name__ == "__main__":
+    # Add parent directory to Python path
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+# Flow imports
 from flow.core.params import (
     SumoParams,
     EnvParams,
@@ -23,8 +27,8 @@ from flow.utils.registry import make_create_env
 
 # Import train.py's functions
 from train import train_rllib, parse_args
-print(f"[DEBUG] 현재 모듈 이름: {__name__}")
-print(f"[DEBUG] 현재 파일 경로: {__file__}")
+
+print("[DEBUG] exp2.py is running.")
 # ---------------------------
 # Module-level experiment configuration
 # ---------------------------
