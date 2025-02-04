@@ -72,7 +72,7 @@ flow_params = dict(
     network=FigureEightNetwork,
 
     # The simulator to be used.
-    simulator='sumo',
+    simulator='traci',
 
     # SUMO-related parameters.
     sim=SumoParams(
