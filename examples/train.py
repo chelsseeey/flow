@@ -40,20 +40,25 @@ def parse_args(args):
 
     # optional input parameters
     parser.add_argument(
-        '--rl_trainer', type=str, default="rllib",
+        '--rl_trainer', type=str, default="rllib",      # 강화학습 트레이너(학습 알고리즘 구현체)를 지정
         help='the RL trainer to use. either rllib or Stable-Baselines')
+    
+    parser.add_argument(
+    '--num_gpus', type=int, default=1,    # 사용할 GPU의 수
+    help='Number of GPUs to use')
 
     parser.add_argument(
-        '--num_cpus', type=int, default=1,
+        '--num_cpus', type=int, default=1,      # 사용할 CPU의 수
         help='How many CPUs to use')
+    
     parser.add_argument(
-        '--num_steps', type=int, default=5000,
+        '--num_steps', type=int, default=5000 ,      # 학습에 사용할 총 time step(단계) 수를 지정
         help='How many total steps to perform learning over')
     parser.add_argument(
-        '--rollout_size', type=int, default=1000,
+        '--rollout_size', type=int, default=1000,       # 한 번의 학습 배치(rollout)에서 수집할 시뮬레이션 단계(step)의 수를 지정
         help='How many steps are in a training batch.')
     parser.add_argument(
-        '--checkpoint_path', type=str, default=None,
+        '--checkpoint_path', type=str, default=None,         # 이전에 저장한 체크포인트가 있는 디렉터리의 경로를 지정
         help='Directory with checkpoint to restore training from.')
 
     return parser.parse_known_args(args)[0]
@@ -145,6 +150,7 @@ def setup_exps_rllib(flow_params,
     config = deepcopy(agent_cls._default_config)
 
     config["num_workers"] = n_cpus
+    config["num_gpus"] = flags.num_gpus
     config["train_batch_size"] = horizon * n_rollouts
     config["gamma"] = 0.999  # discount rate
     config["model"].update({"fcnet_hiddens": [32, 32, 32]})
@@ -193,7 +199,7 @@ def train_rllib(submodule, flags):
         flow_params, n_cpus, n_rollouts,
         policy_graphs, policy_mapping_fn, policies_to_train)
 
-    ray.init(num_cpus=n_cpus + 1, object_store_memory=200 * 1024 * 1024)
+    ray.init(num_cpus=n_cpus + 1, num_gpus=flags.num_gpus, object_store_memory=200 * 1024 * 1024)
     exp_config = {
         "run": alg_run,
         "env": gym_name,
@@ -209,7 +215,8 @@ def train_rllib(submodule, flags):
     }
 
     if flags.checkpoint_path is not None:
-        exp_config['restore'] = flags.checkpoint_path
+        exp_config['restore'] = flags.checkpoint_path # 해당 체크포인트에서 학습 상태 복원
+    # 실험 실행
     run_experiments({flow_params["exp_tag"]: exp_config})
 
 
