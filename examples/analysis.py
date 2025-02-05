@@ -61,12 +61,7 @@ def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
         plt.xlabel('Iteration')
         plt.ylabel('Reward')
         plt.grid(True)
-        
-        # Save plot
-        plot_path = os.path.join(exp_dir, f"{exp_id}_reward.png")
-        plt.savefig(plot_path)
-        plt.close()
-        print(f"\nPlot saved to: {plot_path}")
+        plt.show()  # Display plot window
     else:
         print(f"No results found in {exp_dir}")
 
