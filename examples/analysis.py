@@ -2,6 +2,8 @@ import argparse
 import pandas as pd
 import glob
 import os
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 def parse_args():
@@ -61,7 +63,10 @@ def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
         plt.xlabel('Iteration')
         plt.ylabel('Reward')
         plt.grid(True)
-        plt.show()  # Display plot window
+        plt.ion()  # Turn on interactive mode
+        plt.show()
+        plt.pause(0.001)  # Add small pause to ensure window displays
+        input("Press Enter to close plot...")  # Keep window open
     else:
         print(f"No results found in {exp_dir}")
 
