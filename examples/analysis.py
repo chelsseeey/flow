@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import glob
 import os
+import matplotlib.pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -50,7 +51,22 @@ def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
     
     results_df = pd.DataFrame(results)
     if not results_df.empty:
+        # Print results
         print(results_df.to_string(index=False))
+        
+        # Create reward plot
+        plt.figure(figsize=(10,6))
+        plt.plot(results_df['Iteration'], results_df['Reward'], 'b-', marker='o')
+        plt.title('Training Progress')
+        plt.xlabel('Iteration')
+        plt.ylabel('Reward')
+        plt.grid(True)
+        
+        # Save plot
+        plot_path = os.path.join(exp_dir, f"{exp_id}_reward.png")
+        plt.savefig(plot_path)
+        plt.close()
+        print(f"\nPlot saved to: {plot_path}")
     else:
         print(f"No results found in {exp_dir}")
 
