@@ -22,12 +22,12 @@ def parse_args():
     return parser.parse_args()
 
 def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
-    
+
     # Add pandas display settings
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_rows', None)
     pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.max_colwidth', int(10000))
     results = []
     
     # Find all progress files
