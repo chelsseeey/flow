@@ -1,0 +1,53 @@
+import argparse
+import pandas as pd
+import glob
+import os
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Analyze Flow training results"
+    )
+    parser.add_argument(
+        '--exp_dir',        # 실험 디렉토리 경로
+        type=str,
+        default="/root/ray_results/figure8_with_lights",
+        help='Directory containing experiment results'
+    )
+    parser.add_argument(
+        '--exp_prefix',     # 실험 ID
+        type=str,
+        default="PPO_MultiAgentAccelPOEnv",
+        help='Experiment name prefix'
+    )
+    return parser.parse_args()
+
+def analyze_training_results(exp_dir, exp_prefix):      # 결과 분석 함수
+    results = []
+    
+    # Find all progress files
+    for trial_dir in glob.glob(f"{exp_dir}/{exp_prefix}*"):
+        progress_file = os.path.join(trial_dir, "progress.csv")
+        
+        if os.path.exists(progress_file):
+            df = pd.read_csv(progress_file)
+            trial_name = os.path.basename(trial_dir)
+            
+            # Extract metrics per iteration
+            for _, row in df.iterrows():
+                results.append({
+                    'Trial Name': trial_name,
+                    'Iteration': row['training_iteration'],
+                    'Timesteps': row['timesteps_total'],
+                    'Reward': row['episode_reward_mean'],
+                    'Time(s)': row['time_total_s']
+                })
+    
+    results_df = pd.DataFrame(results)
+    if not results_df.empty:
+        print(results_df.to_string(index=False))
+    else:
+        print(f"No results found in {exp_dir}")
+
+if __name__ == "__main__":
+    args = parse_args()
+    analyze_training_results(args.exp_dir, args.exp_prefix)
