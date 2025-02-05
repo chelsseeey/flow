@@ -108,7 +108,8 @@ def setup_exps_rllib(flow_params,
                      n_rollouts,
                      policy_graphs=None,
                      policy_mapping_fn=None,
-                     policies_to_train=None):
+                     policies_to_train=None,
+                     flags=None):
     """Return the relevant components of an RLlib experiment.
 
     Parameters
@@ -197,7 +198,7 @@ def train_rllib(submodule, flags):
 
     alg_run, gym_name, config = setup_exps_rllib(
         flow_params, n_cpus, n_rollouts,
-        policy_graphs, policy_mapping_fn, policies_to_train)
+        policy_graphs, policy_mapping_fn, policies_to_train, flags=flags)
 
     ray.init(num_cpus=n_cpus + 1, num_gpus=flags.num_gpus, object_store_memory=200 * 1024 * 1024)
     exp_config = {
