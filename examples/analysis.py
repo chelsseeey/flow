@@ -14,18 +14,18 @@ def parse_args():
         help='Directory containing experiment results'
     )
     parser.add_argument(
-        '--exp_prefix',     # 실험 ID
+        '--exp_id',     # 실험 ID
         type=str,
         default="PPO_MultiAgentAccelPOEnv",
         help='Experiment name prefix'
     )
     return parser.parse_args()
 
-def analyze_training_results(exp_dir, exp_prefix):      # 결과 분석 함수
+def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
     results = []
     
     # Find all progress files
-    for trial_dir in glob.glob(f"{exp_dir}/{exp_prefix}*"):
+    for trial_dir in glob.glob(f"{exp_dir}/{exp_id}*"):
         progress_file = os.path.join(trial_dir, "progress.csv")
         
         if os.path.exists(progress_file):
@@ -50,4 +50,4 @@ def analyze_training_results(exp_dir, exp_prefix):      # 결과 분석 함수
 
 if __name__ == "__main__":
     args = parse_args()
-    analyze_training_results(args.exp_dir, args.exp_prefix)
+    analyze_training_results(args.exp_dir, args.exp_id)
