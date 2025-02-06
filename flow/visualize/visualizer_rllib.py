@@ -244,6 +244,10 @@ def visualizer_rllib(args):
             if multiagent:
                 for actor, rew in reward.items():
                     ret[policy_map_fn(actor)][0] += rew
+
+                # Handle dict reward in single agent case
+            if isinstance(reward, dict):
+                ret += reward['rl_0']  # 단일 에이전트: dict/scalar 타입 처리
             else:
                 ret += reward
             if multiagent and done['__all__']:
