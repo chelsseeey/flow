@@ -39,7 +39,7 @@ for i in range(NUM_AUTOMATED):
         lane_change_controller=(StaticLaneChanger, {}),
         routing_controller=(ContinuousRouter, {}),
         car_following_params=SumoCarFollowingParams(
-            speed_mode=7,
+            speed_mode=31,
             accel=MAX_ACCEL,
             decel=MAX_DECEL,
         ),
@@ -53,7 +53,7 @@ vehicles.add(
     lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=0,
+        speed_mode=23,
         decel=2.5,
     ),
     initial_speed=0,
