@@ -109,6 +109,11 @@ class MultiEnv(MultiAgentEnv, Env):
             self.render()
 
         states = self.get_state()
+
+        # states가 numpy array인 경우 dict로 변환
+        if isinstance(states, np.ndarray):
+            states = {"rl_0": states}
+
         done = {key: key in self.k.vehicle.get_arrived_ids()
                 for key in states.keys()}
         if crash or (self.time_counter >= self.env_params.sims_per_step *
