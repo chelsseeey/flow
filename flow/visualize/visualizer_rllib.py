@@ -202,6 +202,8 @@ def visualizer_rllib(args):
     for i in range(args.num_rollouts):
         vel = []
         state = env.reset()
+        if not isinstance(state, dict):
+            state = {'rl_0': state}
         if multiagent:
             ret = {key: [0] for key in rets.keys()}
         else:
@@ -226,9 +228,11 @@ def visualizer_rllib(args):
                         action[agent_id] = agent.compute_action(
                             state[agent_id], policy_id=policy_map_fn(agent_id))
             else:
-                action_value = agent.compute_action(state)
+                # 단일 에이전트 환경에서는, state는 딕셔너리로 변환되어 있으므로 "rl_0" 키 사용
+                action_value = agent.compute_action(state["rl_0"])
                 # 단일 에이전트 환경에서는, 단일 행동 값을 딕셔너리로 감쌉니다.
                 action = {"rl_0": action_value}
+
             state, reward, done, _ = env.step(action)
             if multiagent:
                 for actor, rew in reward.items():
