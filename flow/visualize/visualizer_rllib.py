@@ -226,7 +226,9 @@ def visualizer_rllib(args):
                         action[agent_id] = agent.compute_action(
                             state[agent_id], policy_id=policy_map_fn(agent_id))
             else:
-                action = agent.compute_action(state)
+                action_value = agent.compute_action(state)
+                # 단일 에이전트 환경에서는, 단일 행동 값을 딕셔너리로 감쌉니다.
+                action = {"rl_0": action_value}
             state, reward, done, _ = env.step(action)
             if multiagent:
                 for actor, rew in reward.items():
