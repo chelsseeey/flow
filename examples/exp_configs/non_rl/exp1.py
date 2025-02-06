@@ -26,7 +26,7 @@ MAX_DECEL = 1.5  # RL 차량 최대 감속도
 NUM_AUTOMATED = 1  # RL 차량 개수 (1, 2, 7, 14 중 선택 가능)
 assert NUM_AUTOMATED in [1, 2, 7, 14], "NUM_AUTOMATED 값이 유효하지 않습니다."
 
-# 🚀 Ray 초기화 (중복 실행 방지)
+# Ray 초기화 (중복 실행 방지)
 ray.init(ignore_reinit_error=True)
 
 vehicles = VehicleParams()
