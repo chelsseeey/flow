@@ -37,7 +37,7 @@ vehicles.add(
     lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=31,
+        speed_mode=7,
         decel=2.5,
     ),
     initial_speed=0,
