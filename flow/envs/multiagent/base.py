@@ -270,7 +270,12 @@ class MultiEnv(MultiAgentEnv, Env):
         # render a frame
         self.render(reset=True)
 
-        return self.get_state()
+        # 상태 변환 로직 추가
+        states = self.get_state()
+        if isinstance(states, np.ndarray):
+            states = {"rl_0": states}
+    
+        return states
 
     def clip_actions(self, rl_actions=None):
         """Clip the actions passed from the RL agent.
