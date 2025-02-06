@@ -206,7 +206,11 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 follow_head / max_length
             ])
 
-        return obs
+        # 단일 에이전트 환경이라면 딕셔너리에서 첫 번째 값만 반환합니다.
+        if len(obs) == 1:
+            return list(obs.values())[0]
+        else:
+            return obs
 
     def additional_command(self):
         """See parent class.
