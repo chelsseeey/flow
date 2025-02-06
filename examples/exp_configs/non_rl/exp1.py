@@ -56,7 +56,7 @@ vehicles.add(
         speed_mode=0,
         decel=2.5,
     ),
-    initial_speed=0,
+    initial_speed=14,
     num_vehicles=13
 )
 
