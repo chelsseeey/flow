@@ -234,6 +234,11 @@ def visualizer_rllib(args):
                 action = {"rl_0": action_value}
 
             state, reward, done, _ = env.step(action)
+
+            # env.step() 반환 상태도 단일 numpy array일 경우 딕셔너리로 변환
+            if not isinstance(state, dict):
+                state = {"rl_0": state}
+
             if multiagent:
                 for actor, rew in reward.items():
                     ret[policy_map_fn(actor)][0] += rew
