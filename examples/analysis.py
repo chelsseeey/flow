@@ -34,10 +34,10 @@ def extract_safety_metrics(row):
     }
     
     try:
-            sampler_perf = eval(str(row['sampler_perf']))
-            events['warnings'] = sampler_perf.get('num_warnings', 0)
-            events['collisions'] = sampler_perf.get('num_collisions', 0)
-            events['speed_violations'] = sampler_perf.get('num_speed_violations', 0)
+        sampler_perf = eval(str(row['sampler_perf']))
+        events['warnings'] = sampler_perf.get('num_warnings', 0)
+        events['collisions'] = sampler_perf.get('num_collisions', 0)
+        events['speed_violations'] = sampler_perf.get('num_speed_violations', 0)
     except Exception as e:
         print(f"Error extracting safety metrics: {e}")
     return events
