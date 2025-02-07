@@ -35,13 +35,13 @@ def extract_safety_metrics(row):
     
     try:
         # sampler_perf 직접 접근
-        if 'sampler_perf' in row:
+        if 'sampler_perf' in row.index:
             sampler_perf = eval(str(row['sampler_perf']))
             events['warnings'] = sampler_perf.get('num_warnings', 0)
             events['collisions'] = sampler_perf.get('num_collisions', 0)
             events['speed_violations'] = sampler_perf.get('num_speed_violations', 0)
-    except:
-        pass
+    except Exception as e:
+        print(f"Error extracting safety metrics: {e}")
     return events
 
 def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
