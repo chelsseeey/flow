@@ -43,6 +43,14 @@ def parse_training_results(trial_name):
     csv_path = os.path.join(results_dir, f'{trial_name}_results.csv')
     df.to_csv(csv_path, index=False)
     print(f"Results saved to: {csv_path}")
+    
+    # Display first few rows
+    print("\nPreview of results:")
+    print(df.head())
+    
+    # Open CSV in VS Code
+    os.system(f"code {csv_path}")
+    
     return df
 
 if __name__ == "__main__":
