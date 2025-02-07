@@ -30,16 +30,28 @@ def extract_safety_metrics(row):
         'collisions': 0,
         'speed_violations': 0
     }
-    
+     
     try:
-        # Remove info column access
         if 'sampler_perf' in row:
+            # 디버그: 원본 데이터 출력
+            print(f"Raw sampler_perf data: {row['sampler_perf']}")
+            
             sampler_perf = eval(str(row['sampler_perf']))
-            events['warnings'] = sampler_perf.get('num_warnings', 0)
-            events['collisions'] = sampler_perf.get('num_collisions', 0)
-            events['speed_violations'] = sampler_perf.get('num_speed_violations', 0)
+            
+            # 키워드로 안전 지표 검색
+            for key in sampler_perf:
+                if 'warning' in str(key).lower():
+                    events['warnings'] += int(sampler_perf[key])
+                if 'collision' in str(key).lower():
+                    events['collisions'] += int(sampler_perf[key])
+                if 'speed' in str(key).lower() and 'violation' in str(key).lower():
+                    events['speed_violations'] += int(sampler_perf[key])
+            
+            # 디버그: 처리된 결과 출력
+            print(f"Processed safety events: {events}")
+            
     except Exception as e:
-        print(f"Error extracting safety metrics: {e}")
+        print(f"Error in safety metrics extraction: {e}")
     return events
 
 def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
