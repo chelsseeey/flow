@@ -34,8 +34,6 @@ def extract_safety_metrics(row):
     }
     
     try:
-        # sampler_perf 직접 접근
-        if 'sampler_perf' in row.index:
             sampler_perf = eval(str(row['sampler_perf']))
             events['warnings'] = sampler_perf.get('num_warnings', 0)
             events['collisions'] = sampler_perf.get('num_collisions', 0)
