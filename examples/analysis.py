@@ -24,6 +24,26 @@ def parse_args():
     )
     return parser.parse_args()
 
+def extract_safety_metrics(row):
+    """Extract safety events from info column"""
+    info = eval(row['info'])  # Convert string to dict
+    events = {
+        'warnings': 0,
+        'collisions': 0,
+        'speed_violations': 0
+    }
+    
+    try:
+        sampler_perf = info.get('sampler_perf', {})
+        if isinstance(sampler_perf, dict):
+            events['warnings'] = sampler_perf.get('num_warnings', 0)
+            events['collisions'] = sampler_perf.get('num_collisions', 0)
+            events['speed_violations'] = sampler_perf.get('num_speed_violations', 0)
+    except:
+        pass
+    return events
+
+
 def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
 
     # Add pandas display settings
@@ -43,12 +63,16 @@ def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
             
             # Extract metrics per iteration
             for _, row in df.iterrows():
+                safety_events = extract_safety_metrics(row)
                 results.append({
                     'Trial Name': trial_name,
                     'Iteration': row['training_iteration'],
                     'Timesteps': row['timesteps_total'],
                     'Reward': row['episode_reward_mean'],
-                    'Time(s)': row['time_total_s']
+                    'Time(s)': row['time_total_s'],
+                    'Warnings': safety_events['warnings'],
+                    'Collisions': safety_events['collisions'], 
+                    'Speed Violations': safety_events['speed_violations']
                 })
     
     results_df = pd.DataFrame(results)
