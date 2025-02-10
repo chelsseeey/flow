@@ -68,6 +68,8 @@ flow_params = dict(
     sim=SumoParams(
         sim_step=0.1,
         render=False,
+        print_warnings=False,  # Disable debug prints
+        restart_instance=True  # Restart
     ),
 
     # Environment parameters.
