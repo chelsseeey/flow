@@ -27,7 +27,7 @@ vehicles.add(
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
-        decel=2.5,
+        decel=3.5,
     ),
     initial_speed=0,
     num_vehicles=14
@@ -42,10 +42,10 @@ traffic_lights.add(
     phases=[
         {"duration": "10", "state": "GrGr"},  # Horizontal green
         {"duration": "3", "state": "yrGr"},   # Horizontal yellow
-        {"duration": "2", "state": "rrrr"},   # All red
+        {"duration": "3", "state": "rrrr"},   # All red
         {"duration": "10", "state": "rGrG"},    # Vertical green
         {"duration": "3", "state": "ryrG"},     # Vertical yellow
-        {"duration": "2", "state": "rrrr"}      # All red
+        {"duration": "3", "state": "rrrr"}      # All red
     ]
 )
 
