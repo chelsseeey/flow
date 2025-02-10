@@ -40,12 +40,12 @@ traffic_lights.add(
     tls_type="static",  # Static (fixed cycle) traffic light
     programID="1",
     phases=[
-        {"duration": "30", "state": "GrGr"},  # Horizontal green
+        {"duration": "40", "state": "GrGr"},  # Horizontal green
         {"duration": "3", "state": "yrGr"},   # Horizontal yellow
-        {"duration": "5", "state": "rrrr"},   # All red
-        {"duration": "30", "state": "rGrG"},    # Vertical green
+        {"duration": "10", "state": "rrrr"},   # All red
+        {"duration": "40", "state": "rGrG"},    # Vertical green
         {"duration": "3", "state": "ryrG"},     # Vertical yellow
-        {"duration": "5", "state": "rrrr"}      # All red
+        {"duration": "10", "state": "rrrr"}      # All red
     ]
 )
 
