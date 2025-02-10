@@ -3,8 +3,12 @@ from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, Tr
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
-from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
+from flow.envs.multiagent import MultiAgentAccelPOEnv
 from flow.networks import FigureEightNetwork
+from flow.utils.registry import make_create_env
+from flow.core import rewards
+import gym
+import numpy as np
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -14,10 +18,7 @@ N_ROLLOUTS = 20
 N_CPUS = 1
 
 # Define the vehicles in the network.
-# Here we use one RL-controlled vehicle and 13 human-driven vehicles.
 vehicles = VehicleParams()
-
-# Add the RL-controlled vehicle (using the RLController and StaticLaneChanger)
 
 # Add idm vehicles
 vehicles.add(
@@ -27,7 +28,7 @@ vehicles.add(
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
-        decel=3.5,
+        decel=2.5,
     ),
     initial_speed=0,
     num_vehicles=14
@@ -40,12 +41,12 @@ traffic_lights.add(
     tls_type="static",  # Static (fixed cycle) traffic light
     programID="1",
     phases=[
-        {"duration": "40", "state": "GrGr"},  # Horizontal green
+        {"duration": "5", "state": "GrGr"},  # Horizontal green
         {"duration": "3", "state": "yrGr"},   # Horizontal yellow
-        {"duration": "10", "state": "rrrr"},   # All red
-        {"duration": "40", "state": "rGrG"},    # Vertical green
+        {"duration": "2", "state": "rrrr"},   # All red
+        {"duration": "5", "state": "rGrG"},    # Vertical green
         {"duration": "3", "state": "ryrG"},     # Vertical yellow
-        {"duration": "10", "state": "rrrr"}      # All red
+        {"duration": "2", "state": "rrrr"}      # All red
     ]
 )
 
@@ -73,7 +74,7 @@ flow_params = dict(
     env=EnvParams(
         horizon=HORIZON,
         additional_params={
-            'target_velocity': 15,
+            'target_velocity': 20,
             'max_accel': 3,
             'max_decel': 3,
             'sort_vehicles': False
@@ -95,5 +96,43 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-print("Traffic light parameters:", flow_params['tls'])
+# Create and register env
+create_env, env_name = make_create_env(params=flow_params, version=0)
+env = create_env(0)
+
+# Evaluation with iterations and rollouts
+num_iterations = 10
+all_iteration_rewards = []  # 각 iteration의 평균 reward 저장
+
+# Iteration loop
+for i in range(num_iterations):
+    iteration_rewards = []  # 현재 iteration의 rollout rewards
+    
+    # 20 rollouts for this iteration
+    for r in range(N_ROLLOUTS):
+        state = env.reset()
+        episode_reward = 0
+        done = False
+        
+        while not done:
+            action = env.action_space.sample()
+            next_state, reward, done, info = env.step(action)
+            reward = rewards.desired_velocity(env, fail=False)
+            episode_reward += reward
+            
+        iteration_rewards.append(episode_reward)
+        print(f"Rollout {r} in Iteration {i}: Reward = {episode_reward}")
+    
+    # 현재 iteration의 평균 reward 계산
+    curr_iter_avg = np.mean(iteration_rewards)
+    all_iteration_rewards.append(curr_iter_avg)
+    print(f"\nIteration {i} Average Reward: {curr_iter_avg}\n")
+
+# Print each iteration's average reward
+print("\nAll Iteration Average Rewards:")
+for i, avg_reward in enumerate(all_iteration_rewards):
+    print(f"Iteration {i}: {avg_reward}")
+
+# Original prints
+print("\nTraffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)
