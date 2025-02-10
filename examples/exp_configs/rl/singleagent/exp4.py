@@ -133,6 +133,3 @@ print("\nAll Iteration Average Rewards:")
 for i, avg_reward in enumerate(all_iteration_rewards):
     print(f"Iteration {i}: {avg_reward}")
 
-# Original prints
-print("\nTraffic light parameters:", flow_params['tls'])
-print("Flow parameters:", flow_params)
