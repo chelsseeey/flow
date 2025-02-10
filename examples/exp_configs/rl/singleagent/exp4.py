@@ -42,10 +42,10 @@ traffic_lights.add(
     phases=[
         {"duration": "20", "state": "GrGr"},  # Horizontal green
         {"duration": "3", "state": "yrGr"},   # Horizontal yellow
-        {"duration": "3", "state": "rrrr"},   # All red
+        {"duration": "5", "state": "rrrr"},   # All red
         {"duration": "20", "state": "rGrG"},    # Vertical green
         {"duration": "3", "state": "ryrG"},     # Vertical yellow
-        {"duration": "3", "state": "rrrr"}      # All red
+        {"duration": "5", "state": "rrrr"}      # All red
     ]
 )
 
