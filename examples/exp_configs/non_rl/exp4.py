@@ -3,7 +3,7 @@ from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, Tr
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
-from flow.envs.multiagent import MultiAgentAccelPOEnv
+from flow.envs import Env
 from flow.networks import FigureEightNetwork
 from flow.utils.registry import make_create_env
 from flow.core import rewards
@@ -56,7 +56,7 @@ flow_params = dict(
     exp_tag='figure8_with_lights',
 
     # The environment class to be used.
-    env_name=MultiAgentAccelPOEnv,
+    env_name=Env,
 
     # The network class to be used.
     network=FigureEightNetwork,
