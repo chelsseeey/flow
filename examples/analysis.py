@@ -5,76 +5,70 @@ import os
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from warning_logger import collision_logger
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyze Flow training results"
     )
     parser.add_argument(
-        '--exp_dir',
+        '--exp_dir',        # 실험 디렉토리 경로
         type=str,
         default="/root/ray_results/figure8_with_lights",
         help='Directory containing experiment results'
     )
     parser.add_argument(
-        '--exp_id',
+        '--exp_id',     # 실험 ID
         type=str,
-        required=True,
-        help='Experiment ID to analyze'
+        default="PPO_MultiAgentAccelPOEnv",
+        help='Experiment name prefix'
     )
     return parser.parse_args()
 
-def analyze_training_results(exp_dir, exp_id):
-    # Find progress files
-    progress_files = glob.glob(os.path.join(exp_dir, f"{exp_id}*", "progress.csv"))
+def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
+
+    # Add pandas display settings
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', int(10000))
+    results = []
     
-    if not progress_files:
-        print(f"No progress files found in {exp_dir} for experiment {exp_id}")
-        return
+    # Find all progress files
+    for trial_dir in glob.glob(f"{exp_dir}/{exp_id}*"):
+        progress_file = os.path.join(trial_dir, "progress.csv")
+        
+        if os.path.exists(progress_file):
+            df = pd.read_csv(progress_file)
+            trial_name = os.path.basename(trial_dir)
+            
+            # Extract metrics per iteration
+            for _, row in df.iterrows():
+                results.append({
+                    'Trial Name': trial_name,
+                    'Iteration': row['training_iteration'],
+                    'Timesteps': row['timesteps_total'],
+                    'Reward': row['episode_reward_mean'],
+                    'Time(s)': row['time_total_s']
+                })
     
-    # Load and process data
-    dfs = []
-    for file in progress_files:
-        trial_name = os.path.basename(os.path.dirname(file))
-        df = pd.read_csv(file)
-        df['trial_name'] = trial_name
-        dfs.append(df)
-    
-    combined_df = pd.concat(dfs)
-    
-    # Create figure with subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
-    
-    # Plot training metrics
-    for trial_name, group in combined_df.groupby('trial_name'):
-        ax1.plot(group['training_iteration'], 
-                group['episode_reward_mean'], 
-                label=trial_name)
-    
-    ax1.set_xlabel('Training Iteration')
-    ax1.set_ylabel('Mean Episode Reward')
-    ax1.set_title('Training Progress')
-    ax1.legend()
-    ax1.grid(True)
-    
-    # Plot collision data
-    try:
-        collision_data = collision_logger.load_collision_data(exp_id)
-        if collision_data:
-            ax2.plot(range(1, len(collision_logger.iteration_collisions) + 1),
-                    collision_logger.iteration_collisions, 'r-')
-            ax2.set_xlabel('Iteration Number')
-            ax2.set_ylabel('Number of Collisions')
-            ax2.set_title(f'Collisions - {exp_id}')
-            ax2.grid(True)
-        else:
-            print(f"No collision data found for {exp_id}")
-    except Exception as e:
-        print(f"Error loading collision data: {e}")
-    
-    plt.tight_layout()
-    plt.show()
+    results_df = pd.DataFrame(results)
+    if not results_df.empty:
+        # Print results
+        print(results_df.to_string(index=False))
+        
+        # Create reward plot
+        plt.figure(figsize=(10,6))
+        plt.plot(results_df['Iteration'], results_df['Reward'], 'b-', marker='o')
+        plt.title('Training Progress')
+        plt.xlabel('Iteration')
+        plt.ylabel('Reward')
+        plt.grid(True)
+        plt.ion()  # Turn on interactive mode
+        plt.show()
+        plt.pause(0.001)  # Add small pause to ensure window displays
+        input("Press Enter to close plot...")  # Keep window open
+    else:
+        print(f"No results found in {exp_dir}")
 
 if __name__ == "__main__":
     args = parse_args()
