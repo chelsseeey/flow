@@ -5,6 +5,10 @@ from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter,
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
+import io
+from contextlib import redirect_stdout
+import matplotlib.pyplot as plt
+plt.ion()
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -105,6 +109,46 @@ flow_params = dict(
     # Include the traffic light settings.
     tls=traffic_lights
 )
+
+# 콜백 클래스 정의
+class CollisionCallback:
+    def __init__(self):
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        self.iteration_collisions = []
+        
+    def __call__(self, env, worker):
+        collision_count = 0
+        for _ in range(N_ROLLOUTS):
+            f = io.StringIO()
+            with redirect_stdout(f):
+                state = env.reset()
+                done = False
+                while not done:
+                    action = env.action_space.sample()
+                    next_state, reward, done, info = env.step(action)
+                    
+            output = f.getvalue()
+            if "Collision detected at time step" in output:
+                collision_count += 1
+                
+        self.iteration_collisions.append(collision_count)
+        
+        # 그래프 업데이트
+        self.ax.clear()
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
+                    self.iteration_collisions, 'g-')
+        plt.pause(0.01)
+
+# 콜백 추가
+flow_params['callback'] = CollisionCallback()
 
 print("Traffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)
