@@ -3,12 +3,14 @@ from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, Tr
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
-from flow.envs.ring.accel import AccelEnv 
+from flow.envs.ring.accel import AccelEnv  
 from flow.networks import FigureEightNetwork
 from flow.utils.registry import make_create_env
 from flow.core import rewards
 import gym
 import numpy as np
+import matplotlib.pyplot as plt
+plt.ion()  # Enable interactive mode
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -69,7 +71,7 @@ flow_params = dict(
         sim_step=0.1,
         render=False,
         print_warnings=False,  # Disable debug prints
-        restart_instance=True,  # Restart
+        restart_instance=True, # Restart
         emission_path=None,
         no_step_log=True,   # Disable step logs
     ),
@@ -113,6 +115,20 @@ env = AccelEnv(
     )
 )
 
+# Create figure with two subplots
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+ax1.set_xlabel('Rollout Number')
+ax1.set_ylabel('Reward')
+ax1.set_title('Rewards per Rollout')
+ax1.grid(True)
+
+ax2.set_xlabel('Iteration Number')
+ax2.set_ylabel('Average Reward')
+ax2.set_title('Average Rewards per Iteration')
+ax2.grid(True)
+
+
+
 # Evaluation with iterations and rollouts
 num_iterations = 10
 all_iteration_rewards = []  # 각 iteration의 평균 reward 저장
@@ -120,6 +136,13 @@ all_iteration_rewards = []  # 각 iteration의 평균 reward 저장
 # Iteration loop
 for i in range(num_iterations):
     iteration_rewards = []  # 현재 iteration의 rollout rewards
+    
+    # Update rollout plot
+    ax1.clear()
+    ax1.set_xlabel('Rollout Number')
+    ax1.set_ylabel('Reward')
+    ax1.set_title(f'Rewards per Rollout (Iteration {i})')
+    ax1.grid(True)
     
     # 20 rollouts for this iteration
     for r in range(N_ROLLOUTS):
@@ -135,14 +158,23 @@ for i in range(num_iterations):
             
         iteration_rewards.append(episode_reward)
         print(f"Rollout {r} in Iteration {i}: Reward = {episode_reward}")
+        
+        # Update rollout plot
+        ax1.plot(range(len(iteration_rewards)), iteration_rewards, 'b-')
+        plt.pause(0.01)
     
     # 현재 iteration의 평균 reward 계산
     curr_iter_avg = np.mean(iteration_rewards)
     all_iteration_rewards.append(curr_iter_avg)
     print(f"\nIteration {i} Average Reward: {curr_iter_avg}\n")
+    
+    # Update iteration plot
+    ax2.plot(range(len(all_iteration_rewards)), all_iteration_rewards, 'r-')
+    plt.pause(0.01)
 
 # Print each iteration's average reward
 print("\nAll Iteration Average Rewards:")
 for i, avg_reward in enumerate(all_iteration_rewards):
     print(f"Iteration {i}: {avg_reward}")
 
+plt.show()  # Keep plots visible
