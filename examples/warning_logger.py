@@ -1,54 +1,50 @@
-import json
-import sys
+import io
+from contextlib import redirect_stdout
+import matplotlib.pyplot as plt
 from datetime import datetime
+import os
 
-class WarningLogger:
+class CollisionLogger:
     def __init__(self):
-        self.logs = {}
-        self.current_iteration = 1
-        self.current_logs = []
-    
-    def collect_log(self, log_message):
-        self.current_logs.append(log_message)
-    
-    def new_iteration(self):
-        if self.current_logs:
-            self.logs[f"iteration_{self.current_iteration}"] = {
-                "logs": self.current_logs,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            self.current_logs = []
-            self.current_iteration += 1
-    
-    def save_logs(self):
-        with open('/home/mcnl/Desktop/chaeyoung/flow/examples/training_results/warning_logs.json', 'w') as f:
-            json.dump(self.logs, f, indent=2)
+        # Setup plot
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        
+        # Collision tracking
+        self.iteration_collisions = []
+        
+    def __call__(self, env, worker):
+        collision_count = 0
+        f = io.StringIO()
+        with redirect_stdout(f):
+            state = env.reset()
+            done = False
+            while not done:
+                action = env.action_space.sample()
+                next_state, reward, done, info = env.step(action)
+                
+        # Check for collision
+        output = f.getvalue()
+        if "Collision detected at time step" in output:
+            collision_count += 1
+            
+        # Update data and plot
+        self.iteration_collisions.append(collision_count)
+        self._update_plot()
+        
+    def _update_plot(self):
+        self.ax.clear()
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
+                    self.iteration_collisions, 'g-')
+        plt.pause(0.01)
 
-# Initialize logger
-logger = WarningLogger()
-
-# Setup stdout/stderr redirection
-original_stdout = sys.stdout
-original_stderr = sys.stderr
-
-class LoggerWriter:
-    def write(self, message):
-        if "Warning" in message or "Collision" in message:
-            logger.collect_log(message.strip())
-        original_stderr.write(message)
-    
-    def flush(self):
-        original_stderr.flush()
-
-# Redirect stderr to catch warnings
-sys.stderr = LoggerWriter()
-
-# Functions to be called from main training script
-def on_iteration_complete():
-    logger.new_iteration()
-
-def on_training_end():
-    logger.save_logs()
-
-# Export logger instance
-__all__ = ['logger', 'on_iteration_complete', 'on_training_end']
+# Create global logger instance
+collision_logger = CollisionLogger()

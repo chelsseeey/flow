@@ -5,11 +5,7 @@ from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter,
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
-import io
-from contextlib import redirect_stdout
-import numpy as np
-import matplotlib.pyplot as plt
-plt.ion()
+from warning_logger import collision_logger
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -107,56 +103,13 @@ flow_params = dict(
     # Initial configuration parameters.
     initial=InitialConfig(),
 
+    # Add collision logger
+    callback=collision_logger,  
+
     # Include the traffic light settings.
     tls=traffic_lights
 )
 
-# 콜백 클래스 정의
-class CollisionCallback:
-    def __init__(self):
-        self.iteration_collisions = []
-        
-    def __call__(self, env, worker):
-        collision_count = 0
-        f = io.StringIO()
-        with redirect_stdout(f):
-            state = env.reset()
-            done = False
-            while not done:
-                action = env.action_space.sample()
-                next_state, reward, done, info = env.step(action)
-                
-        output = f.getvalue()
-        if "Collision detected at time step" in output:
-            collision_count += 1
-            
-        self.iteration_collisions.append(collision_count)
-        self._plot_collisions()
-    
-    def _plot_collisions(self):
-        plt.figure(1)
-        plt.clf()
-        plt.xlabel('Iteration Number')
-        plt.ylabel('Number of Collisions')
-        plt.title('Collisions per Iteration')
-        plt.grid(True)
-        plt.plot(range(1, len(self.iteration_collisions) + 1), 
-                self.iteration_collisions, 'g-')
-        plt.pause(0.01)
-    
-    def __getstate__(self):
-        """JSON 직렬화를 위해 상태 반환"""
-        return {'iteration_collisions': self.iteration_collisions}
-    
-    def __setstate__(self, state):
-        """역직렬화를 위한 상태 복원"""
-        self.iteration_collisions = state['iteration_collisions']
-
-# 콜백 객체 생성
-collision_callback = CollisionCallback()
-
-# flow_params에는 콜백 객체의 참조만 포함
-flow_params['callback'] = collision_callback
 
 print("Traffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)

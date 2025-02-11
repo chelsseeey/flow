@@ -7,7 +7,6 @@ from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
 import io
 from contextlib import redirect_stdout
-import numpy as np
 import matplotlib.pyplot as plt
 plt.ion()
 
@@ -114,49 +113,42 @@ flow_params = dict(
 # 콜백 클래스 정의
 class CollisionCallback:
     def __init__(self):
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
         self.iteration_collisions = []
         
     def __call__(self, env, worker):
         collision_count = 0
-        f = io.StringIO()
-        with redirect_stdout(f):
-            state = env.reset()
-            done = False
-            while not done:
-                action = env.action_space.sample()
-                next_state, reward, done, info = env.step(action)
+        for _ in range(N_ROLLOUTS):
+            f = io.StringIO()
+            with redirect_stdout(f):
+                state = env.reset()
+                done = False
+                while not done:
+                    action = env.action_space.sample()
+                    next_state, reward, done, info = env.step(action)
+                    
+            output = f.getvalue()
+            if "Collision detected at time step" in output:
+                collision_count += 1
                 
-        output = f.getvalue()
-        if "Collision detected at time step" in output:
-            collision_count += 1
-            
         self.iteration_collisions.append(collision_count)
-        self._plot_collisions()
-    
-    def _plot_collisions(self):
-        plt.figure(1)
-        plt.clf()
-        plt.xlabel('Iteration Number')
-        plt.ylabel('Number of Collisions')
-        plt.title('Collisions per Iteration')
-        plt.grid(True)
-        plt.plot(range(1, len(self.iteration_collisions) + 1), 
-                self.iteration_collisions, 'g-')
+        
+        # 그래프 업데이트
+        self.ax.clear()
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
+                    self.iteration_collisions, 'g-')
         plt.pause(0.01)
-    
-    def __getstate__(self):
-        """JSON 직렬화를 위해 상태 반환"""
-        return {'iteration_collisions': self.iteration_collisions}
-    
-    def __setstate__(self, state):
-        """역직렬화를 위한 상태 복원"""
-        self.iteration_collisions = state['iteration_collisions']
 
-# 콜백 객체 생성
-collision_callback = CollisionCallback()
-
-# flow_params에는 콜백 객체의 참조만 포함
-flow_params['callback'] = collision_callback
+# 콜백 추가
+flow_params['callback'] = CollisionCallback()
 
 print("Traffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)
