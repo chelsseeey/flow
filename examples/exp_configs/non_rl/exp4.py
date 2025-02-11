@@ -99,8 +99,17 @@ flow_params = dict(
 )
 
 # Create and register env
-create_env, env_name = make_create_env(params=flow_params, version=0)
-env = create_env(0)
+env = AccelEnv(
+    env_params=flow_params['env'],
+    sim_params=flow_params['sim'],
+    network=FigureEightNetwork(
+        name='figure_eight',
+        vehicles=vehicles,
+        net_params=flow_params['net'],
+        initial_config=flow_params['initial'],
+        traffic_lights=flow_params['tls']
+    )
+)
 
 # Evaluation with iterations and rollouts
 num_iterations = 10
