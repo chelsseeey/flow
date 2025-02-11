@@ -156,6 +156,7 @@ for i in range(num_iterations):
         state = env.reset()
         episode_reward = 0
         done = False
+        had_collision = False  # Initialize collision flag
         
         while not done:
             action = env.action_space.sample()
@@ -163,15 +164,12 @@ for i in range(num_iterations):
             reward = rewards.desired_velocity(env, fail=False)
             episode_reward += reward
             
-            # Better collision detection
+            # Collision detection
             if done:
                 crash_text = str(info.get('reason', ''))
                 if 'Collision' in crash_text or 'collision' in crash_text:
                     had_collision = True
-        
-        if had_collision:
-            collision_count += 1
-            print(f"Collision detected in rollout {r}")
+                    collision_count += 1
             
         iteration_rewards.append(episode_reward)
         all_rollout_rewards.append(episode_reward)
