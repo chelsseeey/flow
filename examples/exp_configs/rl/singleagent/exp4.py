@@ -101,7 +101,14 @@ flow_params = dict(
 )
 
 # Create and register env
-env = AccelEnv(
+class CustomAccelEnv(AccelEnv):
+    def k_step(self, rl_actions):
+        obs, reward, done, info = super().k_step(rl_actions)
+        # Disable traffic light state printing
+        return obs, reward, done, info
+
+# Replace environment creation
+env = CustomAccelEnv(
     env_params=flow_params['env'],
     sim_params=flow_params['sim'],
     network=FigureEightNetwork(
