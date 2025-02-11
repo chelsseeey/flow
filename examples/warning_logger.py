@@ -6,12 +6,12 @@ class CollisionLogger:
     def __init__(self):
         self.collision_count = 0
         self.iteration_collisions = []
-        self._setup_plot()
-        
-    def _setup_plot(self):
-        """Setup matplotlib plot - not included in serialization"""
-        plt.ion()
+        # 그래프 초기화
+        plt.ion()  # interactive mode 켜기
         self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.setup_plot()
+        
+    def setup_plot(self):
         self.ax.set_xlabel('Iteration Number')
         self.ax.set_ylabel('Number of Collisions')
         self.ax.set_title('Collisions per Iteration')
@@ -29,35 +29,31 @@ class CollisionLogger:
         output = f.getvalue()
         if "Collision detected at time step" in output:
             self.collision_count += 1
+            print(f"Collision detected! Count: {self.collision_count}")
             
         self.iteration_collisions.append(self.collision_count)
-        self._update_plot()
+        self.update_plot()  # 실시간 그래프 업데이트
         return self.collision_count
         
-    def _update_plot(self):
-        """Update plot - not included in serialization"""
-        if not hasattr(self, 'ax'):
-            self._setup_plot()
+    def update_plot(self):
         self.ax.clear()
+        self.setup_plot()
         self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
                     self.iteration_collisions, 'g-')
-        self.ax.set_xlabel('Iteration Number')
-        self.ax.set_ylabel('Number of Collisions')
-        self.ax.set_title('Collisions per Iteration')
-        self.ax.grid(True)
-        plt.pause(0.01)
+        plt.pause(0.01)  # 그래프 업데이트
         
     def __getstate__(self):
-        """Only serialize collision data"""
-        return {
-            'collision_count': self.collision_count,
-            'iteration_collisions': self.iteration_collisions
-        }
+        state = self.__dict__.copy()
+        # matplotlib 객체 제외
+        del state['fig']
+        del state['ax']
+        return state
     
     def __setstate__(self, state):
-        """Restore collision data and recreate plot"""
-        self.collision_count = state['collision_count']
-        self.iteration_collisions = state['iteration_collisions']
-        self._setup_plot()
+        self.__dict__.update(state)
+        # matplotlib 객체 재생성
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.setup_plot()
 
 collision_logger = CollisionLogger()

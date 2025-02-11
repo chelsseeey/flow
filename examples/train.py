@@ -52,7 +52,7 @@ def parse_args(args):
         help='How many CPUs to use')
     
     parser.add_argument(
-        '--num_steps', type=int, default=10 ,      # 학습에 사용할 총 time step(단계) 수를 지정
+        '--num_steps', type=int, default=3 ,      # 학습에 사용할 총 time step(단계) 수를 지정
         help='How many total steps to perform learning over')
     parser.add_argument(
         '--rollout_size', type=int, default=1000,       # 한 번의 학습 배치(rollout)에서 수집할 시뮬레이션 단계(step)의 수를 지정
