@@ -7,6 +7,7 @@ from flow.envs.ring.accel import AccelEnv
 from flow.networks import FigureEightNetwork
 from flow.utils.registry import make_create_env
 from flow.core import rewards
+from flow.core.kernel.traffic_light import KernelTrafficLight  
 import gym
 import numpy as np
 
