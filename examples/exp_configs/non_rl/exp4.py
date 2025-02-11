@@ -72,7 +72,6 @@ flow_params = dict(
         restart_instance=True, # Restart
         emission_path=None,
         no_step_log=True,   # Disable step logs
-        summary_warnings=False  # Disable summary warnings
     ),
 
     # Environment parameters.
