@@ -145,13 +145,13 @@ ax3.set_ylim(0, 20)
 ax3.set_yticks(range(0, 21, 5))
 
 # Evaluation variables
-num_iterations = 10
+num_iterations = 100
 all_iteration_rewards = []
 all_rollout_rewards = []
 iteration_collisions = []  # New: track collisions per iteration
 
 # Iteration loop
-for i in range(num_iterations):
+for i in range(1, num_iterations + 1):
     iteration_rewards = []
     collision_count = 0
     
@@ -204,7 +204,7 @@ for i in range(num_iterations):
     ax2.grid(True)
     ax2.set_ylim(20, 50)
     ax2.set_yticks(range(20, 51, 5))
-    ax2.plot(range(len(all_iteration_rewards)), all_iteration_rewards, 'r-')
+    ax2.plot(range(1, len(all_iteration_rewards) + 1), all_iteration_rewards, 'r-')
     
     ax3.clear()
     ax3.set_xlabel('Iteration Number')
@@ -213,7 +213,7 @@ for i in range(num_iterations):
     ax3.grid(True)
     ax3.set_ylim(0, 30)
     ax3.set_yticks(range(0, 31, 5))
-    ax3.plot(range(len(iteration_collisions)), iteration_collisions, 'g-')
+    ax3.plot(range(1, len(iteration_collisions) + 1), iteration_collisions, 'g-')
     plt.pause(0.01)
 
 plt.show()
