@@ -7,6 +7,24 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from warning_logger import collision_logger
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Analyze Flow training results"
+    )
+    parser.add_argument(
+        '--exp_dir',
+        type=str,
+        default="/root/ray_results/figure8_with_lights",
+        help='Directory containing experiment results'
+    )
+    parser.add_argument(
+        '--exp_id',
+        type=str,
+        required=True,
+        help='Experiment ID to analyze'
+    )
+    return parser.parse_args()
+
 def analyze_training_results(exp_dir, exp_id):
     # Find progress files
     progress_files = glob.glob(os.path.join(exp_dir, f"{exp_id}*", "progress.csv"))
