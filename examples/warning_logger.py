@@ -9,12 +9,14 @@ class CollisionLogger:
         self.collision_count = 0
         self.iteration_collisions = []
         self.trial_name = None
-        self.results_dir = "/root/ray_results"
+        self.results_dir = "/root/ray_results/figure8_with_lights"
+        print("[DEBUG] CollisionLogger initialized")
         
     def __call__(self, env, worker):
         if not self.trial_name:
             # Get trial name from worker
             self.trial_name = worker.trial_name if hasattr(worker, 'trial_name') else None
+            print(f"[DEBUG] Got trial name: {self.trial_name}")
             
         f = io.StringIO()
         with redirect_stdout(f):
@@ -27,6 +29,7 @@ class CollisionLogger:
         output = f.getvalue()
         if "Collision detected at time step" in output:
             self.collision_count += 1
+            print(f"[DEBUG] Collision detected! Count: {self.collision_count}")
             
         self.iteration_collisions.append(self.collision_count)
         self.save_collision_data()
@@ -36,8 +39,10 @@ class CollisionLogger:
         """Save collision data with trial name"""
         if self.trial_name:
             data = self.to_dict()
-            save_path = os.path.join(self.results_dir, f"{self.trial_name}_collisions.json")
-            os.makedirs(self.results_dir, exist_ok=True)
+            # Save in experiment directory
+            save_path = os.path.join(self.results_dir, self.trial_name, "collision_data.json")
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            print(f"[DEBUG] Saving collision data to: {save_path}")
             with open(save_path, 'w') as f:
                 json.dump(data, f)
 
@@ -58,12 +63,15 @@ class CollisionLogger:
 
     def load_collision_data(self, trial_name):
         """Load collision data for specific trial"""
-        load_path = os.path.join(self.results_dir, f"{trial_name}_collisions.json")
+        load_path = os.path.join(self.results_dir, trial_name, "collision_data.json")
+        print(f"[DEBUG] Looking for collision data at: {load_path}")
         if os.path.exists(load_path):
+            print(f"[DEBUG] Found collision data file")
             with open(load_path, 'r') as f:
                 data = json.load(f)
                 self.from_dict(data)
                 return True
+        print(f"[DEBUG] No collision data file found")
         return False
 
     def to_dict(self):
