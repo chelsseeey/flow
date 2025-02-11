@@ -70,6 +70,10 @@ flow_params = dict(
         render=False,
         print_warnings=False,  # Disable debug prints
         restart_instance=True  # Restart
+        emission_path=None,
+        log_level="error",  # Add log level control
+        no_step_log=True,   # Disable step logs
+        summary_warnings=False  # Disable summary warnings
     ),
 
     # Environment parameters.
