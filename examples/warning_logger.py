@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 class CollisionLogger:
     def __init__(self):
-        # Simple data storage
-        self.collision_count = 0  
+        # Data storage
+        self.collision_count = 0
         self.iteration_collisions = []
         
-        # Setup plotting
+        # Plotting setup
         plt.ion()
         self.fig, self.ax = plt.subplots(figsize=(8, 5))
         self.ax.set_xlabel('Iteration')
@@ -32,7 +32,7 @@ class CollisionLogger:
                 self.collision_count += 1
                 print(f"[DEBUG] Collision detected! Count: {self.collision_count}")
                 
-            # Just store count and update plot
+            # Store count and update plot
             self.iteration_collisions.append(self.collision_count)
             self.update_plot()
             
