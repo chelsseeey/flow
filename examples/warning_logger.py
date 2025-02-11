@@ -4,8 +4,17 @@ import matplotlib.pyplot as plt
 
 class CollisionLogger:
     def __init__(self):
+        plt.ion()  # Enable interactive mode
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.setup_plot()
         self.collision_count = 0
         self.iteration_collisions = []
+        
+    def setup_plot(self):
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
         
     def __call__(self, env, worker):
         f = io.StringIO()
@@ -21,26 +30,29 @@ class CollisionLogger:
             self.collision_count += 1
         
         self.iteration_collisions.append(self.collision_count)
-        plot_collisions(self.iteration_collisions)
+        self.update_plot()
+        plt.draw()  # Force update
+        plt.pause(0.01)  # Allow GUI events
         return self.collision_count
         
+    def update_plot(self):
+        self.ax.clear()
+        self.setup_plot()
+        self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
+                    self.iteration_collisions, 'g-')
+        self.fig.canvas.flush_events()  # Force update display
+        
     def __getstate__(self):
-        return {
-            'collision_count': self.collision_count,
-            'iteration_collisions': self.iteration_collisions
-        }
+        state = self.__dict__.copy()
+        # Remove matplotlib objects before serialization
+        del state['fig']
+        del state['ax']
+        return state
         
     def __setstate__(self, state):
-        self.collision_count = state['collision_count']
-        self.iteration_collisions = state['iteration_collisions']
-
-def plot_collisions(collision_data):
-    plt.figure()
-    plt.plot(range(1, len(collision_data) + 1), collision_data, 'g-')
-    plt.xlabel('Iteration Number')
-    plt.ylabel('Number of Collisions')
-    plt.title('Collisions per Iteration')
-    plt.grid(True)
-    plt.pause(0.01)
+        self.__dict__.update(state)
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.setup_plot()
 
 collision_logger = CollisionLogger()
