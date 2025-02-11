@@ -8,7 +8,7 @@ class CollisionLogger:
         self.collision_count = 0
         self.iteration_collisions = []
         
-        # Plotting setup
+        # Plotting setup (will cause circular references if serialized)
         plt.ion()
         self.fig, self.ax = plt.subplots(figsize=(8, 5))
         self.ax.set_xlabel('Iteration')
@@ -48,7 +48,7 @@ class CollisionLogger:
         try:
             self.ax.clear()
             self.ax.plot(range(len(self.iteration_collisions)), 
-                        self.iteration_collisions, 'r-', marker='o')
+                         self.iteration_collisions, 'r-', marker='o')
             self.ax.set_xlabel('Iteration')
             self.ax.set_ylabel('Number of Collisions')
             self.ax.set_title('Real-time Collision Tracking')
@@ -56,5 +56,30 @@ class CollisionLogger:
             plt.pause(0.01)
         except Exception as e:
             print(f"[ERROR] Plot update failed: {e}")
+
+    def __getstate__(self):
+        """
+        Prevent circular references during serialization.
+        Remove figure/axes from state so they won't be included in JSON/pickle.
+        """
+        state = self.__dict__.copy()
+        # Remove matplotlib objects from serialization
+        if 'fig' in state:
+            del state['fig']
+        if 'ax' in state:
+            del state['ax']
+        return state
+
+    def __setstate__(self, state):
+        """
+        Restore state and recreate figure/axes after deserialization.
+        """
+        self.__dict__.update(state)
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.ax.set_xlabel('Iteration')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Real-time Collision Tracking')
+        self.ax.grid(True)
 
 collision_logger = CollisionLogger()
