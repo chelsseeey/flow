@@ -115,8 +115,10 @@ env = AccelEnv(
     )
 )
 
-# Create figure with two subplots
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+# Create figure with three subplots
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
+
+# First two subplots same as before
 ax1.set_xlabel('Rollout Number')
 ax1.set_ylabel('Reward')
 ax1.set_title('Rewards per Rollout')
@@ -131,16 +133,25 @@ ax2.grid(True)
 ax2.set_ylim(20, 50)
 ax2.set_yticks(range(20, 51, 5))
 
-# Evaluation with iterations and rollouts
+# Add collision plot
+ax3.set_xlabel('Iteration Number')
+ax3.set_ylabel('Number of Collisions')
+ax3.set_title('Collisions per Iteration')
+ax3.grid(True)
+ax3.set_ylim(0, 20)
+ax3.set_yticks(range(0, 21, 5))
+
+# Evaluation variables
 num_iterations = 10
-all_iteration_rewards = []  # Store iteration averages
-all_rollout_rewards = []   # Store all rollout rewards
+all_iteration_rewards = []
+all_rollout_rewards = []
+iteration_collisions = []  # New: track collisions per iteration
 
 # Iteration loop
 for i in range(num_iterations):
-    iteration_rewards = []  # Current iteration rewards
+    iteration_rewards = []
+    collision_count = 0  # Count collisions in this iteration
     
-    # 20 rollouts for this iteration
     for r in range(N_ROLLOUTS):
         state = env.reset()
         episode_reward = 0
@@ -152,11 +163,15 @@ for i in range(num_iterations):
             reward = rewards.desired_velocity(env, fail=False)
             episode_reward += reward
             
+            # Check for collision
+            if done and info.get('reason') == 'collision':
+                collision_count += 1
+            
         iteration_rewards.append(episode_reward)
         all_rollout_rewards.append(episode_reward)
         print(f"Rollout {r} in Iteration {i}: Reward = {episode_reward}")
         
-        # Update rollout plot with all rewards
+        # Update rollout plot
         ax1.clear()
         ax1.set_xlabel('Rollout Number')
         ax1.set_ylabel('Reward')
@@ -167,12 +182,14 @@ for i in range(num_iterations):
         ax1.plot(range(len(all_rollout_rewards)), all_rollout_rewards, 'b-')
         plt.pause(0.01)
     
-    # Calculate and store iteration average
+    # Store iteration data
     curr_iter_avg = np.mean(iteration_rewards)
     all_iteration_rewards.append(curr_iter_avg)
-    print(f"\nIteration {i} Average Reward: {curr_iter_avg}\n")
+    iteration_collisions.append(collision_count)
+    print(f"\nIteration {i} Average Reward: {curr_iter_avg}")
+    print(f"Iteration {i} Collisions: {collision_count}\n")
     
-    # Update iteration averages plot
+    # Update iteration plots
     ax2.clear()
     ax2.set_xlabel('Iteration Number')
     ax2.set_ylabel('Average Reward')
@@ -181,6 +198,20 @@ for i in range(num_iterations):
     ax2.set_ylim(20, 50)
     ax2.set_yticks(range(20, 51, 5))
     ax2.plot(range(len(all_iteration_rewards)), all_iteration_rewards, 'r-')
+    
+    ax3.clear()
+    ax3.set_xlabel('Iteration Number')
+    ax3.set_ylabel('Number of Collisions')
+    ax3.set_title('Collisions per Iteration')
+    ax3.grid(True)
+    ax3.set_ylim(0, 20)
+    ax3.set_yticks(range(0, 21, 5))
+    ax3.plot(range(len(iteration_collisions)), iteration_collisions, 'g-')
     plt.pause(0.01)
 
 plt.show()
+
+# Print each iteration's average reward
+print("\nAll Iteration Average Rewards:")
+for i, avg_reward in enumerate(all_iteration_rewards):
+    print(f"Iteration {i}: {avg_reward}")
