@@ -25,6 +25,7 @@ def update_global_plot(iterations):
     ax.set_ylabel('Number of Collisions')
     ax.set_title('Real-time Collision Tracking')
     ax.grid(True)
+    plt.draw()
     plt.pause(0.01)
 
 class CollisionLogger:
