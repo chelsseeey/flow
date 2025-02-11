@@ -106,7 +106,5 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-
-
 print("Traffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)

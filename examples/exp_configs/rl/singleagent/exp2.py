@@ -32,7 +32,6 @@ vehicles.add(
 
 # Add idm vehicles
 vehicles.add(
-
     veh_id='idm',
     acceleration_controller=(IDMController, {}),
     lane_change_controller=(StaticLaneChanger, {}),
@@ -106,7 +105,6 @@ flow_params = dict(
     # Include the traffic light settings.
     tls=traffic_lights
 )
-
 
 print("Traffic light parameters:", flow_params['tls'])
 print("Flow parameters:", flow_params)
