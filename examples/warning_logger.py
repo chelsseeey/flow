@@ -10,6 +10,14 @@ class CollisionLogger:
         self.iteration_collisions = []
         self.trial_name = None
         self.results_dir = "/root/ray_results/figure8_with_lights"
+        
+        # Initialize real-time plot
+        plt.ion()  # Enable interactive mode
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
+        self.ax.set_xlabel('Iteration')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Real-time Collision Tracking')
+        self.ax.grid(True)
         print("[DEBUG] CollisionLogger initialized")
         
     def __call__(self, env, worker):
@@ -32,8 +40,21 @@ class CollisionLogger:
             print(f"[DEBUG] Current trial: {self.trial_name}")
             
         self.iteration_collisions.append(self.collision_count)
+        self.update_plot()
         self.save_collision_data()
+        self.print_summary()  # Print summary after each iteration
         return self.collision_count
+        
+    def update_plot(self):
+        """Update real-time plot"""
+        self.ax.clear()
+        self.ax.plot(range(len(self.iteration_collisions)), 
+                    self.iteration_collisions, 'r-', marker='o')
+        self.ax.set_xlabel('Iteration')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title(f'Real-time Collision Tracking - {self.trial_name}')
+        self.ax.grid(True)
+        plt.pause(0.01)
 
     def save_collision_data(self):
         """Save collision data with trial name"""
@@ -48,6 +69,15 @@ class CollisionLogger:
                 print("[DEBUG] Successfully saved collision data")
             except Exception as e:
                 print(f"[ERROR] Failed to save collision data: {e}")
+
+    def print_summary(self):
+        """Print summary of collisions per iteration"""
+        print("\n=== Collision Summary ===")
+        print("Iteration | Collisions")
+        print("-" * 22)
+        for i, collisions in enumerate(self.iteration_collisions):
+            print(f"{i+1:^9} | {collisions:^10}")
+        print("\nTotal Collisions:", self.collision_count)
 
     def plot_collisions(self, trial_name=None):
         """Plot collision data for specific trial"""
