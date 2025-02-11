@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 
 class CollisionLogger:
     def __init__(self):
-        plt.ion()  # Enable interactive mode
-        self.fig, self.ax = plt.subplots(figsize=(8, 5))
-        self.setup_plot()
         self.collision_count = 0
         self.iteration_collisions = []
+        self._setup_plot()
         
-    def setup_plot(self):
+    def _setup_plot(self):
+        """Setup matplotlib plot - not included in serialization"""
+        plt.ion()
+        self.fig, self.ax = plt.subplots(figsize=(8, 5))
         self.ax.set_xlabel('Iteration Number')
         self.ax.set_ylabel('Number of Collisions')
         self.ax.set_title('Collisions per Iteration')
@@ -28,31 +29,35 @@ class CollisionLogger:
         output = f.getvalue()
         if "Collision detected at time step" in output:
             self.collision_count += 1
-        
+            
         self.iteration_collisions.append(self.collision_count)
-        self.update_plot()
-        plt.draw()  # Force update
-        plt.pause(0.01)  # Allow GUI events
+        self._update_plot()
         return self.collision_count
         
-    def update_plot(self):
+    def _update_plot(self):
+        """Update plot - not included in serialization"""
+        if not hasattr(self, 'ax'):
+            self._setup_plot()
         self.ax.clear()
-        self.setup_plot()
         self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
                     self.iteration_collisions, 'g-')
-        self.fig.canvas.flush_events()  # Force update display
+        self.ax.set_xlabel('Iteration Number')
+        self.ax.set_ylabel('Number of Collisions')
+        self.ax.set_title('Collisions per Iteration')
+        self.ax.grid(True)
+        plt.pause(0.01)
         
     def __getstate__(self):
-        state = self.__dict__.copy()
-        # Remove matplotlib objects before serialization
-        del state['fig']
-        del state['ax']
-        return state
-        
+        """Only serialize collision data"""
+        return {
+            'collision_count': self.collision_count,
+            'iteration_collisions': self.iteration_collisions
+        }
+    
     def __setstate__(self, state):
-        self.__dict__.update(state)
-        plt.ion()
-        self.fig, self.ax = plt.subplots(figsize=(8, 5))
-        self.setup_plot()
+        """Restore collision data and recreate plot"""
+        self.collision_count = state['collision_count']
+        self.iteration_collisions = state['iteration_collisions']
+        self._setup_plot()
 
 collision_logger = CollisionLogger()
