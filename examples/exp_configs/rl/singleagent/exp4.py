@@ -211,8 +211,8 @@ for i in range(num_iterations):
     ax3.set_ylabel('Number of Collisions')
     ax3.set_title('Collisions per Iteration')
     ax3.grid(True)
-    ax3.set_ylim(0, 20)
-    ax3.set_yticks(range(0, 21, 5))
+    ax3.set_ylim(0, 30)
+    ax3.set_yticks(range(0, 31, 5))
     ax3.plot(range(len(iteration_collisions)), iteration_collisions, 'g-')
     plt.pause(0.01)
 
