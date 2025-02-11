@@ -163,8 +163,8 @@ for i in range(num_iterations):
             reward = rewards.desired_velocity(env, fail=False)
             episode_reward += reward
             
-            # Check for collision
-            if done and info.get('reason') == 'collision':
+            # Fix collision detection
+            if done and 'Termination reason: Collision occurred.' in str(info):
                 collision_count += 1
             
         iteration_rewards.append(episode_reward)
