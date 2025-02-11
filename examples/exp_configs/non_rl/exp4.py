@@ -103,9 +103,26 @@ flow_params = dict(
 # Create and register env
 class CustomAccelEnv(AccelEnv):
     def k_step(self, rl_actions):
-        obs, reward, done, info = super().k_step(rl_actions)
-        # Disable traffic light state printing
-        return obs, reward, done, info
+        """Override to prevent traffic light state printing."""
+        next_observation = []
+        reward = 0
+        done = False
+        info = {}
+        
+        for _ in range(self.env_params.sims_per_step):
+            self.time_counter += 1
+            self.step_counter += 1
+            
+            # advance the simulation
+            self.k.simulation.step()
+            
+            # collect observation and reward
+            observation = self.get_state()
+            reward_dict = self.compute_reward(rl_actions, fail=False)
+            
+            done = self.time_counter > self.env_params.horizon
+            
+        return observation, reward_dict, done, info
 
 # Replace environment creation
 env = CustomAccelEnv(
