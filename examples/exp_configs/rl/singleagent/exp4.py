@@ -163,9 +163,15 @@ for i in range(num_iterations):
             reward = rewards.desired_velocity(env, fail=False)
             episode_reward += reward
             
-            # Fix collision detection
-            if done and 'Termination reason: Collision occurred.' in str(info):
-                collision_count += 1
+            # Better collision detection
+            if done:
+                crash_text = str(info.get('reason', ''))
+                if 'Collision' in crash_text or 'collision' in crash_text:
+                    had_collision = True
+        
+        if had_collision:
+            collision_count += 1
+            print(f"Collision detected in rollout {r}")
             
         iteration_rewards.append(episode_reward)
         all_rollout_rewards.append(episode_reward)
