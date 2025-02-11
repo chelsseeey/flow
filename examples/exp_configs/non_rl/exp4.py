@@ -10,6 +10,9 @@ from flow.core import rewards
 import gym
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import io
+from contextlib import redirect_stdout
 plt.ion()  # Enable interactive mode
 
 # time horizon of a single rollout
@@ -150,26 +153,26 @@ iteration_collisions = []  # New: track collisions per iteration
 # Iteration loop
 for i in range(num_iterations):
     iteration_rewards = []
-    collision_count = 0  # Count collisions in this iteration
+    collision_count = 0
     
     for r in range(N_ROLLOUTS):
-        state = env.reset()
-        episode_reward = 0
-        done = False
-        had_collision = False  # Initialize collision flag
-        
-        while not done:
-            action = env.action_space.sample()
-            next_state, reward, done, info = env.step(action)
-            reward = rewards.desired_velocity(env, fail=False)
-            episode_reward += reward
+        # Capture stdout to detect collision messages
+        f = io.StringIO()
+        with redirect_stdout(f):
+            state = env.reset()
+            episode_reward = 0
+            done = False
             
-            # Collision detection
-            if done:
-                crash_text = str(info.get('reason', ''))
-                if "Termination reason: Collision occurred" in str(info):
-                    had_collision = True
-                    collision_count += 1
+            while not done:
+                action = env.action_space.sample()
+                next_state, reward, done, info = env.step(action)
+                reward = rewards.desired_velocity(env, fail=False)
+                episode_reward += reward
+        
+        # Check captured output for collision
+        output = f.getvalue()
+        if "Termination reason: Collision occurred" in output:
+            collision_count += 1
             
         iteration_rewards.append(episode_reward)
         all_rollout_rewards.append(episode_reward)
@@ -186,7 +189,7 @@ for i in range(num_iterations):
         ax1.plot(range(len(all_rollout_rewards)), all_rollout_rewards, 'b-')
         plt.pause(0.01)
     
-    # Store iteration data
+    # Store iteration data and update plots
     curr_iter_avg = np.mean(iteration_rewards)
     all_iteration_rewards.append(curr_iter_avg)
     iteration_collisions.append(collision_count)
