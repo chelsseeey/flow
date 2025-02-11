@@ -7,6 +7,7 @@ from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
 import io
 from contextlib import redirect_stdout
+import numpy as np
 import matplotlib.pyplot as plt
 plt.ion()
 
@@ -136,8 +137,9 @@ class CollisionCallback:
                 collision_count += 1
                 
         self.iteration_collisions.append(collision_count)
+        self._update_plot()
         
-        # 그래프 업데이트
+    def _update_plot(self):
         self.ax.clear()
         self.ax.set_xlabel('Iteration Number')
         self.ax.set_ylabel('Number of Collisions')
