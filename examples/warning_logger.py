@@ -58,3 +58,7 @@ class CollisionLogger:
             return 0
 
 collision_logger = CollisionLogger()
+
+# Ensure the plot starts displaying immediately
+setup_global_plot()
+update_global_plot([0])  # Initialize with zero collisions
