@@ -167,7 +167,7 @@ for i in range(num_iterations):
             # Collision detection
             if done:
                 crash_text = str(info.get('reason', ''))
-                if 'Collision' in crash_text or 'collision' in crash_text:
+                if "Termination reason: Collision occurred" in str(info):
                     had_collision = True
                     collision_count += 1
             
