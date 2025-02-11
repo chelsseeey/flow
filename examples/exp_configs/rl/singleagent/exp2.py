@@ -5,7 +5,6 @@ from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter,
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
-from warning_logger import collision_logger
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -33,6 +32,7 @@ vehicles.add(
 
 # Add idm vehicles
 vehicles.add(
+
     veh_id='idm',
     acceleration_controller=(IDMController, {}),
     lane_change_controller=(StaticLaneChanger, {}),
@@ -102,9 +102,6 @@ flow_params = dict(
 
     # Initial configuration parameters.
     initial=InitialConfig(),
-
-    # Add collision logger
-    callback=collision_logger,  
 
     # Include the traffic light settings.
     tls=traffic_lights
