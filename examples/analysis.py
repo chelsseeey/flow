@@ -5,19 +5,20 @@ import os
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+from warning_logger import collision_logger
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Analyze Flow training results"
     )
     parser.add_argument(
-        '--exp_dir',        # 실험 디렉토리 경로
+        '--exp_dir',
         type=str,
         default="/root/ray_results/figure8_with_lights",
         help='Directory containing experiment results'
     )
     parser.add_argument(
-        '--exp_id',     # 실험 ID
+        '--exp_id',
         type=str,
         default="PPO_MultiAgentAccelPOEnv",
         help='Experiment name prefix'
@@ -30,15 +31,10 @@ def extract_safety_metrics(row):
         'collisions': 0,
         'speed_violations': 0
     }
-     
+    
     try:
         if 'sampler_perf' in row:
-            # 디버그: 원본 데이터 출력
-            print(f"Raw sampler_perf data: {row['sampler_perf']}")
-            
             sampler_perf = eval(str(row['sampler_perf']))
-            
-            # 키워드로 안전 지표 검색
             for key in sampler_perf:
                 if 'warning' in str(key).lower():
                     events['warnings'] += int(sampler_perf[key])
@@ -46,63 +42,46 @@ def extract_safety_metrics(row):
                     events['collisions'] += int(sampler_perf[key])
                 if 'speed' in str(key).lower() and 'violation' in str(key).lower():
                     events['speed_violations'] += int(sampler_perf[key])
-            
-            # 디버그: 처리된 결과 출력
-            print(f"Processed safety events: {events}")
-            
     except Exception as e:
-        print(f"Error in safety metrics extraction: {e}")
+        print(f"Error processing safety metrics: {e}")
+    
     return events
 
-def analyze_training_results(exp_dir, exp_id):      # 결과 분석 함수
-
-    # Add pandas display settings
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.width', None)
-    pd.set_option('display.max_colwidth', int(10000))
-    results = []
+def analyze_training_results(exp_dir, exp_id):
+    # Find progress files
+    progress_files = glob.glob(os.path.join(exp_dir, f"{exp_id}*", "progress.csv"))
     
-    # Find all progress files
-    for trial_dir in glob.glob(f"{exp_dir}/{exp_id}*"):
-        progress_file = os.path.join(trial_dir, "progress.csv")
-        
-        if os.path.exists(progress_file):
-            df = pd.read_csv(progress_file)
-            trial_name = os.path.basename(trial_dir)
-            
-            # Extract metrics per iteration
-            for _, row in df.iterrows():
-                safety_events = extract_safety_metrics(row)
-                results.append({
-                    'Trial Name': trial_name,
-                    'Iteration': row['training_iteration'],
-                    'Timesteps': row['timesteps_total'],
-                    'Reward': row['episode_reward_mean'],
-                    'Time(s)': row['time_total_s'],
-                    'Warnings': safety_events['warnings'],
-                    'Collisions': safety_events['collisions'], 
-                    'Speed Violations': safety_events['speed_violations']
-                })
+    if not progress_files:
+        print(f"No progress files found in {exp_dir} for experiment {exp_id}")
+        return
     
-    results_df = pd.DataFrame(results)
-    if not results_df.empty:
-        # Print results
-        print(results_df.to_string(index=False))
-        
-        # Create reward plot
-        plt.figure(figsize=(10,6))
-        plt.plot(results_df['Iteration'], results_df['Reward'], 'b-', marker='o')
-        plt.title('Training Progress')
-        plt.xlabel('Iteration')
-        plt.ylabel('Reward')
-        plt.grid(True)
-        plt.ion()  # Turn on interactive mode
-        plt.show()
-        plt.pause(0.001)  # Add small pause to ensure window displays
-        input("Press Enter to close plot...")  # Keep window open
-    else:
-        print(f"No results found in {exp_dir}")
+    # Load and process data
+    dfs = []
+    for file in progress_files:
+        trial_name = os.path.basename(os.path.dirname(file))
+        df = pd.read_csv(file)
+        df['trial_name'] = trial_name
+        dfs.append(df)
+    
+    combined_df = pd.concat(dfs)
+    
+    # Plot training metrics
+    plt.figure(figsize=(12, 6))
+    for trial_name, group in combined_df.groupby('trial_name'):
+        plt.plot(group['training_iteration'], 
+                group['episode_reward_mean'], 
+                label=trial_name)
+    
+    plt.xlabel('Training Iteration')
+    plt.ylabel('Mean Episode Reward')
+    plt.title('Training Progress')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
+    # Plot collision data
+    for trial_name in combined_df['trial_name'].unique():
+        collision_logger.plot_collisions(trial_name)
 
 if __name__ == "__main__":
     args = parse_args()
