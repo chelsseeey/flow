@@ -1,21 +1,13 @@
 import io
 from contextlib import redirect_stdout
 import matplotlib.pyplot as plt
+import json
 
 class CollisionLogger:
     def __init__(self):
         self.collision_count = 0
         self.iteration_collisions = []
-        # 그래프 초기화
-        plt.ion()  # interactive mode 켜기
-        self.fig, self.ax = plt.subplots(figsize=(8, 5))
-        self.setup_plot()
-        
-    def setup_plot(self):
-        self.ax.set_xlabel('Iteration Number')
-        self.ax.set_ylabel('Number of Collisions')
-        self.ax.set_title('Collisions per Iteration')
-        self.ax.grid(True)
+        print("CollisionLogger initialized")
         
     def __call__(self, env, worker):
         f = io.StringIO()
@@ -32,28 +24,32 @@ class CollisionLogger:
             print(f"Collision detected! Count: {self.collision_count}")
             
         self.iteration_collisions.append(self.collision_count)
-        self.update_plot()  # 실시간 그래프 업데이트
         return self.collision_count
-        
-    def update_plot(self):
-        self.ax.clear()
-        self.setup_plot()
-        self.ax.plot(range(1, len(self.iteration_collisions) + 1), 
-                    self.iteration_collisions, 'g-')
-        plt.pause(0.01)  # 그래프 업데이트
-        
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # matplotlib 객체 제외
-        del state['fig']
-        del state['ax']
-        return state
-    
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        # matplotlib 객체 재생성
-        plt.ion()
-        self.fig, self.ax = plt.subplots(figsize=(8, 5))
-        self.setup_plot()
+
+    def to_dict(self):
+        """Convert to JSON serializable format"""
+        return {
+            'collision_count': self.collision_count,
+            'iteration_collisions': self.iteration_collisions
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create instance from dict data"""
+        instance = cls()
+        instance.collision_count = data['collision_count']
+        instance.iteration_collisions = data['iteration_collisions']
+        return instance
+
+    def plot_collisions(self):
+        """Plot collision data"""
+        plt.figure(figsize=(8, 5))
+        plt.plot(range(1, len(self.iteration_collisions) + 1), 
+                self.iteration_collisions, 'g-')
+        plt.xlabel('Iteration Number')
+        plt.ylabel('Number of Collisions')
+        plt.title('Collisions per Iteration')
+        plt.grid(True)
+        plt.show()
 
 collision_logger = CollisionLogger()
