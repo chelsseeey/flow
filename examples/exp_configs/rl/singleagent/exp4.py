@@ -7,7 +7,6 @@ from flow.envs.ring.accel import AccelEnv
 from flow.networks import FigureEightNetwork
 from flow.utils.registry import make_create_env
 from flow.core import rewards
-from flow.core.kernel.traffic_light import KernelTrafficLight  
 import gym
 import numpy as np
 
@@ -101,51 +100,11 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-# Add custom kernel traffic light class
-class CustomKernelTrafficLight(KernelTrafficLight):
-    def get_state(self, node_id):
-        """Silent version of get_state."""
-        return self.master_kernel.traffic_light.get_state(node_id)
-
-# Add custom network class
-class CustomFigureEight(FigureEightNetwork):
-    def kernel_api(self):
-        kernel_api = super().kernel_api()
-        kernel_api['traffic_light'] = CustomKernelTrafficLight
-        return kernel_api
-
-
-
-
 # Create and register env
-class CustomAccelEnv(AccelEnv):
-    def k_step(self, rl_actions):
-        """Override to prevent traffic light state printing."""
-        next_observation = []
-        reward = 0
-        done = False
-        info = {}
-        
-        for _ in range(self.env_params.sims_per_step):
-            self.time_counter += 1
-            self.step_counter += 1
-            
-            # advance the simulation
-            self.k.simulation.step()
-            
-            # collect observation and reward
-            observation = self.get_state()
-            reward_dict = self.compute_reward(rl_actions, fail=False)
-            
-            done = self.time_counter > self.env_params.horizon
-            
-        return observation, reward_dict, done, info
-
-# Replace environment creation
-env = CustomAccelEnv(
+env = AccelEnv(
     env_params=flow_params['env'],
     sim_params=flow_params['sim'],
-    network=CustomFigureEight(
+    network=FigureEightNetwork(
         name='figure_eight',
         vehicles=vehicles,
         net_params=flow_params['net'],
@@ -153,7 +112,6 @@ env = CustomAccelEnv(
         traffic_lights=flow_params['tls']
     )
 )
-
 
 # Evaluation with iterations and rollouts
 num_iterations = 10

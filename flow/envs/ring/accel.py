@@ -153,10 +153,13 @@ class AccelEnv(Env):
             self.k.vehicle.set_color(rl_id, color=(255, 0, 0))  # 빨간색
 
         # 신호등 상태 디버깅 추가
+        """ 
         try:
             print("Traffic light states:", self.k.traffic_light.get_state("center"))
+        
         except Exception as e:
-            print(f"Error retrieving traffic light state: {e}")
+            print(f"Error retrieving traffic light state: {e}") 
+        """
 
 
 
