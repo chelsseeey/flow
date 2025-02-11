@@ -100,6 +100,22 @@ flow_params = dict(
     tls=traffic_lights
 )
 
+# Add custom kernel traffic light class
+class CustomKernelTrafficLight(KernelTrafficLight):
+    def get_state(self, node_id):
+        """Silent version of get_state."""
+        return self.master_kernel.traffic_light.get_state(node_id)
+
+# Add custom network class
+class CustomFigureEight(FigureEightNetwork):
+    def kernel_api(self):
+        kernel_api = super().kernel_api()
+        kernel_api['traffic_light'] = CustomKernelTrafficLight
+        return kernel_api
+
+
+
+
 # Create and register env
 class CustomAccelEnv(AccelEnv):
     def k_step(self, rl_actions):
@@ -128,7 +144,7 @@ class CustomAccelEnv(AccelEnv):
 env = CustomAccelEnv(
     env_params=flow_params['env'],
     sim_params=flow_params['sim'],
-    network=FigureEightNetwork(
+    network=CustomFigureEight(
         name='figure_eight',
         vehicles=vehicles,
         net_params=flow_params['net'],
@@ -136,6 +152,7 @@ env = CustomAccelEnv(
         traffic_lights=flow_params['tls']
     )
 )
+
 
 # Evaluation with iterations and rollouts
 num_iterations = 10
