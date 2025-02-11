@@ -41,16 +41,14 @@ iteration_rewards = [
 # Create the plot
 plt.figure(figsize=(10, 5))
 
-# PPO Reward Plot
-plt.plot(iterations, ppo_rewards, marker='o', linestyle='-', color='b', label='rl Reward')
-
-# Iteration-based Measurement Plot
-plt.plot(iterations, iteration_rewards, marker='s', linestyle='--', color='r', label='non rl Reward')
+# Plot both lines
+plt.plot(iterations, ppo_rewards, 'b-', marker='o', label='rl Reward')
+plt.plot(iterations, iteration_rewards, 'r-', marker='o', label='non rl Reward')
 
 # Labels and Title
 plt.xlabel('Iteration')
 plt.ylabel('Reward')
-plt.title('Reward Progression over Iterations (PPO & Iteration-based)')
+plt.title('Reward Progression over Iterations (RL & NON-RL)')
 plt.legend()
 plt.grid(True)
 
