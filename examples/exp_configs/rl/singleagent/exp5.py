@@ -131,7 +131,7 @@ flow_params = dict(
 )
 
 # Create and register env
-env = AccelEnv(
+env = MultiAgentAccelPOEnv(
     env_params=flow_params['env'],
     sim_params=flow_params['sim'],
     network=FigureEightNetwork(
