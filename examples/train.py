@@ -403,3 +403,18 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+
+# Add this function to count collisions
+def count_collisions(log_file):
+    """Counts the number of collisions in a log file."""
+    collision_count = 0
+    try:
+        with open(log_file, "r") as f:
+            for line in f:
+                if "Collision detected" in line:
+                    collision_count += 1
+    except FileNotFoundError:
+        print(f"Error: Log file '{log_file}' not found.")
+        return None
+    return collision_count
