@@ -200,8 +200,8 @@ for i in range(1, num_iterations + 1):
         ax1.set_ylabel('Reward')
         ax1.set_title('All Rollout Rewards')
         ax1.grid(True)
-        ax1.set_ylim(20, 50)
-        ax1.set_yticks(range(20, 51, 5))
+        ax1.set_ylim(20, 250)
+        ax1.set_yticks(range(20, 251))
         ax1.plot(range(len(all_rollout_rewards)), all_rollout_rewards, 'b-')
         plt.pause(0.01)
     
@@ -219,7 +219,7 @@ for i in range(1, num_iterations + 1):
     ax2.set_title('Average Rewards per Iteration')
     ax2.grid(True)
     ax2.set_ylim(20, 50)
-    ax2.set_yticks(range(20, 51, 5))
+    ax2.set_yticks(range())
     ax2.plot(range(1, len(all_iteration_rewards) + 1), all_iteration_rewards, 'r-')
     
     ax3.clear()
@@ -238,3 +238,24 @@ plt.show()
 print("\nAll Iteration Average Rewards:")
 for i, avg_reward in enumerate(all_iteration_rewards):
     print(f"Iteration {i}: {avg_reward}")
+
+
+# Add RLlib configuration
+from flow.examples.callbacks.collision_logger_callback import CollisionLoggerCallbacks
+from ray import tune
+
+config = {
+    "env": MultiAgentAccelPOEnv,
+    "env_config": flow_params,
+    "num_workers": N_CPUS - 1,
+    "rollout_fragment_length": HORIZON // N_ROLLOUTS,
+    "callbacks": CollisionLoggerCallbacks,
+}
+
+if __name__ == "__main__":
+    tune.run(
+        "PPO",
+        config=config,
+        stop={"training_iteration": 10},
+        local_dir="/home/mcnl/Desktop/chaeyoung/flow/results",
+    )
