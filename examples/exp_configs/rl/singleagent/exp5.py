@@ -130,12 +130,13 @@ env = MultiAgentAccelPOEnv(
     )
 )
 
+# Initialize all_iteration_rewards list
+all_iteration_rewards = []
 
 # Print each iteration's average reward
 print("\nAll Iteration Average Rewards:")
 for i, avg_reward in enumerate(all_iteration_rewards):
     print(f"Iteration {i}: {avg_reward}")
-
 
 # Add RLlib configuration
 from flow.examples.callbacks.collision_logger_callback import CollisionLoggerCallbacks
