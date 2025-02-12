@@ -5,7 +5,6 @@ from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter,
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
-from warning_logger import collision_logger  # Add import
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -102,9 +101,6 @@ flow_params = dict(
 
     # Initial configuration parameters.
     initial=InitialConfig(),
-
-    # Add collision logger
-    callback=collision_logger,  # Add logger to flow_params
 
     # Include the traffic light settings.
     tls=traffic_lights
