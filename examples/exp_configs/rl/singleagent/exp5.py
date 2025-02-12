@@ -50,19 +50,6 @@ vehicles.add(
     initial_speed=0,
     num_vehicles=13
 )
-# Add idm vehicles
-vehicles.add(
-    veh_id='idm',
-    acceleration_controller=(IDMController, {}),
-    lane_change_controller=(StaticLaneChanger, {}),
-    routing_controller=(ContinuousRouter, {}),
-    car_following_params=SumoCarFollowingParams(
-        speed_mode=7,
-        decel=2.5,
-    ),
-    initial_speed=0,
-    num_vehicles=14
-)
 
 # Define traffic light settings.
 traffic_lights = TrafficLightParams(baseline=False)
