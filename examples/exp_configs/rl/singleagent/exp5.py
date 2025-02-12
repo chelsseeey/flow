@@ -178,13 +178,16 @@ for i in range(1, num_iterations + 1):
             while not done:
                 # 단일 에이전트 환경에서는 "rl" 키에 대해 액션 값을 dict로 전달합니다.
                 action = {'rl_0': env.action_space.sample()}
-                next_state, reward, done, info = env.step(action)
-                reward = rewards.desired_velocity(env, fail=False)
+                next_state, _, done, info = env.step(action)
+                # 환경의 내장 보상 함수(compute_reward)를 호출합니다.
+                reward_dict = env.compute_reward(action, fail=False)
+                # 단일 에이전트이므로, 'rl_0' 키에 해당하는 보상을 사용합니다.
+                reward = reward_dict['rl_0']
                 episode_reward += reward
         
         # Check captured output for collision
         output = f.getvalue()
-        if "Collision detected" in output:
+        if "Collision detected at time step" in output:
             collision_count += 1
             
         iteration_rewards.append(episode_reward)
