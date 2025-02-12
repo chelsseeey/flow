@@ -184,7 +184,7 @@ for i in range(1, num_iterations + 1):
         
         # Check captured output for collision
         output = f.getvalue()
-        if "Termination reason: Collision occurred" in output:
+        if "Collision detected" in output:
             collision_count += 1
             
         iteration_rewards.append(episode_reward)
