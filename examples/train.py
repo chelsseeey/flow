@@ -10,7 +10,6 @@ import argparse
 import json
 import os
 import sys
-import logging
 from time import strftime
 from copy import deepcopy
 
@@ -19,27 +18,6 @@ from flow.core.util import ensure_dir
 from flow.utils.registry import env_constructor
 from flow.utils.rllib import FlowParamsEncoder, get_flow_params
 from flow.utils.registry import make_create_env
-
-
-
-# 실험 이름 가져오기 (예: 커맨드 라인 인자에서)
-exp_name = sys.argv[1] if len(sys.argv) > 1 else "default_exp"
-
-# 로그 파일 이름 생성 (실험 이름 + 타임스탬프)
-log_filename = f"{exp_name}_{strftime('%Y%m%d-%H%M%S')}.log"
-
-# 로그 파일 경로 설정 (예: logs 디렉토리에 저장)
-log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)  # 디렉토리가 없으면 생성
-log_filepath = os.path.join(log_dir, log_filename)
-
-# 로깅 설정
-logging.basicConfig(
-    filename=log_filepath,  # 로그 파일 이름
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
 
 
 def parse_args(args):
@@ -75,7 +53,7 @@ def parse_args(args):
         help='How many CPUs to use')
     
     parser.add_argument(
-        '--num_steps', type=int, default=10 ,      # 학습에 사용할 총 time step(단계) 수를 지정
+        '--num_steps', type=int, default=3 ,      # 학습에 사용할 총 time step(단계) 수를 지정
         help='How many total steps to perform learning over')
     parser.add_argument(
         '--rollout_size', type=int, default=1000,       # 한 번의 학습 배치(rollout)에서 수집할 시뮬레이션 단계(step)의 수를 지정
@@ -85,6 +63,7 @@ def parse_args(args):
         help='Directory with checkpoint to restore training from.')
 
     return parser.parse_known_args(args)[0]
+
 
 def run_model_stablebaseline(flow_params,
                              num_cpus=1,
@@ -403,5 +382,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
