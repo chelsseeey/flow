@@ -9,14 +9,12 @@ ax = None
 def setup_global_plot():
     global fig, ax
     if fig is None or ax is None:
-        # 인터랙티브 모드
         plt.ion()
         fig, ax = plt.subplots(figsize=(8, 5))
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Number of Collisions')
         ax.set_title('Real-time Collision Tracking')
         ax.grid(True)
-        # 그래프 창을 뜨게 하는 호출
         plt.show(block=False)
 
 def update_global_plot(iterations):
@@ -28,7 +26,6 @@ def update_global_plot(iterations):
     ax.set_ylabel('Number of Collisions')
     ax.set_title('Real-time Collision Tracking')
     ax.grid(True)
-    # 그래프 새로고침
     plt.draw()
     plt.pause(0.01)
 
@@ -38,7 +35,7 @@ class CollisionLogger:
         self.iteration_collisions = []
         print("[DEBUG] CollisionLogger initialized")
 
-    def __call__(self, env, worker):
+    def __call__(self, env, worker=None):
         try:
             f = io.StringIO()
             with redirect_stdout(f):
@@ -49,24 +46,20 @@ class CollisionLogger:
                     next_state, reward, done, info = env.step(action)
             output = f.getvalue()
 
-            # 충돌 메시지 감지
-            if "Collision detected at time step" in output:
+            if "Collision detected" in output or "Collision occurred" in output:
                 self.collision_count += 1
                 print(f"[DEBUG] Collision detected! Count: {self.collision_count}")
 
-            # 매 iteration마다 충돌 개수 기록 후 그래프 업데이트
             self.iteration_collisions.append(self.collision_count)
             update_global_plot(self.iteration_collisions)
             print(f"Iteration {len(self.iteration_collisions)}: {self.collision_count} collisions")
 
             return self.collision_count
         except Exception as e:
-            print(f"[ERROR] Error in __call__: {e}")
+            print(f"[ERROR] Error in CollisionLogger: {e}")
             return 0
 
-# 인스턴스 생성
 collision_logger = CollisionLogger()
 
-# 학습 시작할 때 한 번 실행해주면 그래프 창이 바로 뜸
-setup_global_plot()
-update_global_plot([0])
+def monitor_collisions(env, worker=None):
+    return collision_logger(env, worker)

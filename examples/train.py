@@ -12,6 +12,7 @@ import os
 import sys
 from time import strftime
 from copy import deepcopy
+import subprocess
 
 from flow.core.util import ensure_dir
 from flow.utils.registry import env_constructor
@@ -63,6 +64,12 @@ def parse_args(args):
 
     return parser.parse_known_args(args)[0]
 
+if __name__ == "__main__":
+    flags = parse_args(sys.argv[1:])
+    # exp2.py를 실행하고 num_steps 값을 전달
+    subprocess.run([sys.executable, "path/to/exp2.py", str(flags.num_steps)])
+
+    
 
 def run_model_stablebaseline(flow_params,
                              num_cpus=1,
