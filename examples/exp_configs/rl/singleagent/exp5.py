@@ -218,8 +218,8 @@ for i in range(1, num_iterations + 1):
     ax2.set_ylabel('Average Reward')
     ax2.set_title('Average Rewards per Iteration')
     ax2.grid(True)
-    ax2.set_ylim(20, 50)
-    ax2.set_yticks(range())
+    ax2.set_ylim(20, 250)
+    ax2.set_yticks(range(20, 251))
     ax2.plot(range(1, len(all_iteration_rewards) + 1), all_iteration_rewards, 'r-')
     
     ax3.clear()
