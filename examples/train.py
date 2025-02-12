@@ -67,7 +67,7 @@ def parse_args(args):
 if __name__ == "__main__":
     flags = parse_args(sys.argv[1:])
     # exp2.py를 실행하고 num_steps 값을 전달
-    subprocess.run([sys.executable, "path/to/exp2.py", str(flags.num_steps)])
+    subprocess.run([sys.executable, "/root/flow/examples/exp_configs/rl/singleagent/exp2.py", str(flags.num_steps)])
 
     
 
