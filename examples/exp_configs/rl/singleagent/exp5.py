@@ -177,7 +177,7 @@ for i in range(1, num_iterations + 1):
             
             while not done:
                 # 단일 에이전트 환경에서는 "rl" 키에 대해 액션 값을 dict로 전달합니다.
-                action = {'rl': env.action_space['rl'].sample()}
+                action = {'rl': env.action_space.sample()}
                 next_state, reward, done, info = env.step(action)
                 reward = rewards.desired_velocity(env, fail=False)
                 episode_reward += reward
