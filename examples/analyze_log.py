@@ -1,75 +1,79 @@
-#!/usr/bin/env python3
 import argparse
 import re
 import matplotlib.pyplot as plt
 
 def parse_blocks(log_lines):
     """
-    로그 파일의 줄들을 순회하면서, 각 iteration 블록을 추출합니다.
-    각 블록은 "Result for"로 시작하며, 그 블록 내에서 "training_iteration:"을 찾아 iteration 번호를 기록합니다.
-    반환값은 각 블록을 (iteration, block_lines) 튜플의 리스트로 반환합니다.
-    iteration 번호가 없으면 None으로 표시됩니다.
+    Parses log file lines, extracting each iteration block.
+    Each block starts with "Result for", and "training_iteration:" is searched within the block
+    to record the iteration number.
+    Returns a list of (iteration, block_lines) tuples for each block.
+    If the iteration number is not found, it is marked as None.
     """
     blocks = []
     current_block_lines = []
     current_iteration = None
 
     for line in log_lines:
-        # 새로운 블록의 시작: "Result for"로 시작하는 줄
+        # Start of a new block: lines starting with "Result for"
         if line.startswith("Result for"):
-            # 이미 진행 중인 블록이 있다면 저장
+            # Save the existing block if it's in progress
             if current_block_lines:
                 blocks.append((current_iteration, current_block_lines))
-            # 새 블록 초기화
+            # Initialize a new block
             current_block_lines = [line]
             current_iteration = None
         else:
-            # 현재 블록이 진행 중일 때만 기록
+            # Record only if the current block is in progress
             if current_block_lines:
                 current_block_lines.append(line)
-                # 블록 내에 training_iteration 정보가 아직 없다면 찾기
+                # Find training_iteration information within the block if not already found
                 if current_iteration is None and "training_iteration:" in line:
                     m = re.search(r"training_iteration:\s*(\d+)", line)
                     if m:
                         current_iteration = int(m.group(1))
-    # 마지막 블록 저장
+    # Save the last block
     if current_block_lines:
         blocks.append((current_iteration, current_block_lines))
     return blocks
 
 def count_collisions_in_block(block_lines):
+    """
+    Counts the number of "Collision detected at time step" occurrences within the given block.
+    """
     return sum(1 for line in block_lines if "Collision detected at time step" in line)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="로그 파일에서 각 iteration 별로 'Collision detected at time step' 발생 횟수 계산."
+        description="Calculates the number of 'Collision detected at time step' occurrences per iteration in a log file."
     )
-    parser.add_argument("logfile", help="로그 파일의 경로")
+    parser.add_argument("logfile", help="Path to the log file")
     args = parser.parse_args()
 
     try:
         with open(args.logfile, "r") as f:
             log_lines = f.readlines()
     except Exception as e:
-        print(f"로그 파일을 열 수 없습니다: {e}")
+        print(f"Could not open the log file: {e}")
         return
 
     blocks = parse_blocks(log_lines)
     if not blocks:
-        print("로그 파일에서 iteration 블록을 찾을 수 없습니다.")
+        print("No iteration blocks found in the log file.")
         return
 
-    print("=== 충돌 횟수 요약 ===")
+    print("=== Collision Count Summary ===")
+    iterations = []
+    collision_counts = []
     for iteration, block_lines in blocks:
-        # iteration 번호가 없으면 '알 수 없음'으로 출력
-        iteration_label = str(iteration) if iteration is not None else "알 수 없음"
+        # Output 'Unknown' if there is no iteration number
+        iteration_label = str(iteration) if iteration is not None else "Unknown"
         collision_count = count_collisions_in_block(block_lines)
         print(f"Iteration {iteration_label}: {collision_count} collisions")
+        iterations.append(iteration_label)
+        collision_counts.append(collision_count)
 
-if __name__ == "__main__":
-    main()
-
-# 그래프 그리기: x축은 iteration, y축은 collision 횟수
+    # 그래프 그리기: x축은 iteration, y축은 collision 횟수
     plt.figure(figsize=(8, 5))
     plt.plot(iterations, collision_counts, marker='o', linestyle='-', color='b')
     plt.xlabel('Iteration')
