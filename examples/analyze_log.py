@@ -2,59 +2,49 @@
 import argparse
 import re
 
-def parse_log_file(log_lines):
+def parse_blocks(log_lines):
     """
-    로그 파일의 줄 목록을 받아서, 각 iteration 블록의 시작 인덱스와
-    training_iteration 번호를 리스트로 반환합니다.
-    
-    반환 예:
-        [(line_index1, iteration1), (line_index2, iteration2), ...]
+    로그 파일의 줄들을 순회하면서, 각 iteration 블록을 추출합니다.
+    각 블록은 "Result for"로 시작하며, 그 블록 내에서 "training_iteration:"을 찾아 iteration 번호를 기록합니다.
+    반환값은 각 블록을 (iteration, block_lines) 튜플의 리스트로 반환합니다.
+    iteration 번호가 없으면 None으로 표시됩니다.
     """
     blocks = []
-    # 로그 블록의 시작을 "Result for" 라인으로 판단하고,
-    # 이후 몇 줄 안에서 "training_iteration:" 값을 찾습니다.
-    for i, line in enumerate(log_lines):
+    current_block_lines = []
+    current_iteration = None
+
+    for line in log_lines:
+        # 새로운 블록의 시작: "Result for"로 시작하는 줄
         if line.startswith("Result for"):
-            iteration = None
-            # 이후 20줄 정도 안에서 training_iteration을 찾습니다.
-            for j in range(i, min(i + 20, len(log_lines))):
-                m = re.search(r"training_iteration:\s*(\d+)", log_lines[j])
-                if m:
-                    iteration = int(m.group(1))
-                    break
-            if iteration is not None:
-                blocks.append((i, iteration))
+            # 이미 진행 중인 블록이 있다면 저장
+            if current_block_lines:
+                blocks.append((current_iteration, current_block_lines))
+            # 새 블록 초기화
+            current_block_lines = [line]
+            current_iteration = None
+        else:
+            # 현재 블록이 진행 중일 때만 기록
+            if current_block_lines:
+                current_block_lines.append(line)
+                # 블록 내에 training_iteration 정보가 아직 없다면 찾기
+                if current_iteration is None and "training_iteration:" in line:
+                    m = re.search(r"training_iteration:\s*(\d+)", line)
+                    if m:
+                        current_iteration = int(m.group(1))
+    # 마지막 블록 저장
+    if current_block_lines:
+        blocks.append((current_iteration, current_block_lines))
     return blocks
 
-def count_collisions_per_iteration(log_lines, blocks):
+def count_collisions_in_block(block_lines):
     """
-    blocks에 기록된 각 블록을 기준으로 구간을 나눈 후, 각 구간 내에서
-    "Collision detected at time step" 문구의 등장 횟수를 센다.
-    
-    만약 블록이 하나도 없다면 전체 파일에 대해 충돌 횟수를 센다.
+    주어진 블록 내에서 "Collision detected at time step" 문구의 등장 횟수를 센다.
     """
-    collision_counts = {}
-    if not blocks:
-        # iteration 블록이 없으면 전체 파일의 충돌 횟수를 계산
-        total = sum(1 for line in log_lines if "Collision detected at time step" in line)
-        collision_counts["전체"] = total
-        return collision_counts
-
-    # 첫 블록 전의 줄도 첫 iteration에 포함(블록이 시작되기 전의 로그도 해당 iteration의 일부로 간주)
-    for idx, (start_idx, iteration) in enumerate(blocks):
-        if idx == 0:
-            segment = log_lines[0: (blocks[idx + 1][0] if len(blocks) > 1 else len(log_lines))]
-        else:
-            # 현재 블록 시작부터 다음 블록 시작 전까지
-            end_idx = blocks[idx + 1][0] if idx < len(blocks) - 1 else len(log_lines)
-            segment = log_lines[start_idx:end_idx]
-        count = sum(1 for line in segment if "Collision detected at time step" in line)
-        collision_counts[iteration] = count
-    return collision_counts
+    return sum(1 for line in block_lines if "Collision detected at time step" in line)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="각 iteration별로 'Collision detected at time step' 발생 횟수를 계산합니다."
+        description="로그 파일에서 각 iteration 별로 'Collision detected at time step' 발생 횟수를 계산합니다."
     )
     parser.add_argument("logfile", help="로그 파일의 경로")
     args = parser.parse_args()
@@ -63,15 +53,20 @@ def main():
         with open(args.logfile, "r") as f:
             log_lines = f.readlines()
     except Exception as e:
-        print(f"로그 파일을 여는 중 오류 발생: {e}")
+        print(f"로그 파일을 열 수 없습니다: {e}")
         return
 
-    blocks = parse_log_file(log_lines)
-    counts = count_collisions_per_iteration(log_lines, blocks)
+    blocks = parse_blocks(log_lines)
+    if not blocks:
+        print("로그 파일에서 iteration 블록을 찾을 수 없습니다.")
+        return
 
-    print("\n=== 충돌 횟수 요약 ===")
-    for iteration in sorted(counts, key=lambda x: (x if isinstance(x, int) else -1)):
-        print(f"Iteration {iteration}: {counts[iteration]} collisions")
+    print("=== 충돌 횟수 요약 ===")
+    for iteration, block_lines in blocks:
+        # iteration 번호가 없으면 '알 수 없음'으로 출력
+        iteration_label = str(iteration) if iteration is not None else "알 수 없음"
+        collision_count = count_collisions_in_block(block_lines)
+        print(f"Iteration {iteration_label}: {collision_count} collisions")
 
 if __name__ == "__main__":
     main()
