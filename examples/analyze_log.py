@@ -45,7 +45,6 @@ def main():
         description="Calculates the number of 'Collision detected at time step' occurrences per iteration in a log file."
     )
     parser.add_argument("logfile", help="Path to the log file")
-    parser.add_argument("--output", help="Path to save the graph (e.g., graph.png)", default="collision_graph.png")
     args = parser.parse_args()
 
     try:
@@ -60,13 +59,15 @@ def main():
         print("No iteration blocks found in the log file.")
         return
 
-    # Collect data for the graph
+    print("=== 충돌 횟수 요약 ===")
     iterations = []
     collision_counts = []
+
     for iteration, block_lines in blocks:
         # Output 'Unknown' if there is no iteration number
-        iteration_label = iteration if iteration is not None else "Unknown"
+        iteration_label = str(iteration) if iteration is not None else "Unknown"
         collision_count = count_collisions_in_block(block_lines)
+        print(f"Iteration {iteration_label}: {collision_count} collisions")  # 기존 로그 출력 유지
         iterations.append(iteration_label)
         collision_counts.append(collision_count)
 
@@ -79,11 +80,5 @@ def main():
     plt.xticks(range(len(iterations)), iterations, rotation=90)  # Show all iteration labels
     plt.tight_layout()
 
-    # Save the graph to a file
-    output_path = args.output
-    plt.savefig(output_path)
-    print(f"Graph saved to {output_path}")
-    plt.close()
-
-if __name__ == "__main__":
-    main()
+    # Show the graph
+    plt.show()
