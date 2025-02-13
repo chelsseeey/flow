@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import re
+import matplotlib.pyplot as plt
 
 def parse_blocks(log_lines):
     """
@@ -64,6 +65,19 @@ def main():
         iteration_label = str(iteration) if iteration is not None else "알 수 없음"
         collision_count = count_collisions_in_block(block_lines)
         print(f"Iteration {iteration_label}: {collision_count} collisions")
+
+if __name__ == "__main__":
+    main()
+
+# 그래프 그리기: x축은 iteration, y축은 collision 횟수
+    plt.figure(figsize=(8, 5))
+    plt.plot(iterations, collision_counts, marker='o', linestyle='-', color='b')
+    plt.xlabel('Iteration')
+    plt.ylabel('Collision Count')
+    plt.title('Collisions per Iteration')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()
