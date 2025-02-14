@@ -72,8 +72,7 @@ inflow.add(
     edge="inflow_highway",
     vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
     departLane="free",
-    departSpeed=10,
-    speed_mode=31)
+    departSpeed=10)
 # 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
