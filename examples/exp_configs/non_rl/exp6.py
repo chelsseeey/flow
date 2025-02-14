@@ -12,12 +12,20 @@ from flow.controllers import IDMController
 from flow.envs.merge import MergePOEnv, ADDITIONAL_ENV_PARAMS
 from flow.networks import MergeNetwork
 
+# experiment number
+# - 0: 10% RL penetration,  5 max controllable vehicles
+# - 1: 25% RL penetration, 13 max controllable vehicles
+# - 2: 33% RL penetration, 17 max controllable vehicles
+EXP_NUM = 0
+
 # inflow rate at the highway
 FLOW_RATE = 2000
+# percent of autonomous vehicles
+RL_PENETRATION = [0.1, 0.25, 0.33][EXP_NUM]
 
 vehicles = VehicleParams()
 vehicles.add(
-    veh_id="human",
+    veh_id="human",     # vehicle ID "human"으로 고정
     acceleration_controller=(IDMController, {
         "noise": 0.2
     }),
@@ -48,6 +56,12 @@ inflow.add(
     veh_type="human",
     edge="inflow_highway",
     vehs_per_hour=FLOW_RATE,
+    departLane="free",
+    departSpeed=10)
+inflow.add(
+    veh_type="rl",
+    edge="inflow_highway",
+    vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
     departLane="free",
     departSpeed=10)
 # 합류 지점 진입 차량
