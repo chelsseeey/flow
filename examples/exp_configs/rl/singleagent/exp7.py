@@ -138,8 +138,6 @@ flow_params = dict(
             "max_accel": 1.5,
             "max_decel": 1.5,
             "target_velocity": 20,
-            "num_rl": NUM_RL,
-            "norm_obs": True,    # 관찰값 정규화 추가
         },
     ),
 
@@ -178,3 +176,5 @@ POLICY_GRAPHS = {'av': gen_policy()}
 def policy_mapping_fn(_):
     """Map a policy in RLlib."""
     return 'av'
+
+POLICIES_TO_TRAIN = ['av']  
