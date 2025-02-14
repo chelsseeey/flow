@@ -75,7 +75,7 @@ flow_params = dict(
         render=True,
         emission_path="./data/",
         sim_step=0.2,
-        restart_instance=False,
+        restart_instance=True,
     ),
 
     # environment related parameters (see flow.core.params.EnvParams)
