@@ -1,10 +1,15 @@
 """Figure eight example with traffic lights."""
+from ray.rllib.agents.ppo.ppo_policy import PPOTFPolicy
+from ray.tune.registry import register_env
+
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
-from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
+from flow.controllers import IDMController, SimLaneChangeController, ContinuousRouter, RLController
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
+from flow.utils.registry import make_create_env
+
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -21,20 +26,19 @@ vehicles = VehicleParams()
 vehicles.add(
     veh_id='rl',
     acceleration_controller=(RLController, {}),
-    lane_change_controller=(StaticLaneChanger, {}),
+    lane_change_controller=(SimLaneChangeController, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,  # using the original value (you can change this if needed)
         decel=2.5,
     ),
-    num_vehicles=1
 )
 
 # Add idm vehicles
 vehicles.add(
     veh_id='idm',
     acceleration_controller=(IDMController, {}),
-    lane_change_controller=(StaticLaneChanger, {}),
+    lane_change_controller=(SimLaneChangeController, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
@@ -106,5 +110,28 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-print("Traffic light parameters:", flow_params['tls'])
-print("Flow parameters:", flow_params)
+create_env, env_name = make_create_env(params=flow_params, version=0)
+
+# Register as rllib env
+register_env(env_name, create_env)
+
+test_env = create_env()
+obs_space = test_env.observation_space
+act_space = test_env.action_space
+
+
+def gen_policy():
+    """Generate a policy in RLlib."""
+    return PPOTFPolicy, obs_space, act_space, {}
+
+
+# Setup PG with an ensemble of `num_policies` different policy graphs
+POLICY_GRAPHS = {'av': gen_policy()}
+
+
+def policy_mapping_fn(_):
+    """Map a policy in RLlib."""
+    return 'av'
+
+
+POLICIES_TO_TRAIN = ['av']
