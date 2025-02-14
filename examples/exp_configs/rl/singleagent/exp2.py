@@ -1,5 +1,6 @@
 """Figure eight example with traffic lights."""
-from ray.rllib.algorithms.ppo import PPOPolicy
+from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.agents.ppo.tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
