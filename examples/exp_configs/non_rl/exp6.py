@@ -17,7 +17,7 @@ FLOW_RATE = 2000
 
 vehicles = VehicleParams()
 vehicles.add(
-    veh_id="idm",
+    veh_id="human",
     acceleration_controller=(IDMController, {
         "noise": 0.2
     }),
@@ -43,12 +43,14 @@ traffic_lights.add(
 )
 
 inflow = InFlows()
+# 고속도로 진입 차량
 inflow.add(
-    veh_type="idm",
+    veh_type="human",
     edge="inflow_highway",
     vehs_per_hour=FLOW_RATE,
     departLane="free",
     departSpeed=10)
+# 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_merge",
