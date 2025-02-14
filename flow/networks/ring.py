@@ -76,20 +76,24 @@ class RingNetwork(Network):
             "id": "bottom",
             "x": 0,
             "y": -r,
-            "type": "traffic_light"  # 신호등 노드로 설정
+            "type": "priority"  # Changed from traffic_light
         }, {
             "id": "right",
             "x": r,
-            "y": 0
+            "y": 0,
+            "type": "priority"
         }, {
             "id": "top",
             "x": 0,
-            "y": r
+            "y": r,
+            "type": "priority"
         }, {
             "id": "left",
             "x": -r,
-            "y": 0
+            "y": 0,
+            "type": "priority"
         }]
+
 
         return nodes
 
