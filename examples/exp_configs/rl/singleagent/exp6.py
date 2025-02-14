@@ -1,7 +1,7 @@
 """Ring road example with traffic lights."""
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
-from flow.controllers import IDMController, SimLaneChangeController, ContinuousRouter, RLController
+from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.networks.ring import ADDITIONAL_NET_PARAMS
 from flow.envs import WaveAttenuationPOEnv
 from flow.networks import RingNetwork
@@ -20,7 +20,7 @@ vehicles = VehicleParams()
 vehicles.add(
     veh_id='idm',
     acceleration_controller=(IDMController, {"noise": 0.2}),
-    lane_change_controller=(SimLaneChangeController, {}),
+    lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
@@ -36,7 +36,7 @@ vehicles.add(
 vehicles.add(
     veh_id='rl',
     acceleration_controller=(RLController, {}),
-    lane_change_controller=(SimLaneChangeController, {}),
+    lane_change_controller=(StaticLaneChanger, {}),
     routing_controller=(ContinuousRouter, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,  # using the original value (you can change this if needed)
@@ -90,8 +90,6 @@ flow_params = dict(
             "max_accel": 1,
             "max_decel": 1,
             "ring_length": [220, 270],
-            "num_observed": 2,        # Add observation parameter
-            "target_velocity": 4     # Add target velocity parameter
         },
     ),
 
