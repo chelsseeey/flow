@@ -45,7 +45,7 @@ def parse_args(args):
         help='the RL trainer to use. either rllib or Stable-Baselines')
     
     parser.add_argument(
-    '--num_gpus', type=int, default=1,    # 사용할 GPU의 수
+    '--num_gpus', type=int, default=0,    # 사용할 GPU의 수
     help='Number of GPUs to use')
 
     parser.add_argument(
