@@ -8,7 +8,7 @@ from flow.core.params import NetParams, InFlows, SumoCarFollowingParams, Traffic
 from flow.networks.merge import ADDITIONAL_NET_PARAMS
 from flow.core.params import VehicleParams
 from flow.controllers import IDMController, RLController
-from flow.envs import MergePOEnv
+from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
 
 # experiment number
@@ -108,7 +108,7 @@ flow_params = dict(
     exp_tag='merge_with_lights',
 
     # name of the flow environment the experiment is running on
-    env_name=MergePOEnv,
+    env_name=MultiAgentMergePOEnv,
 
     # name of the network class the experiment is running on
     network=MergeNetwork,
