@@ -26,7 +26,7 @@ RL_PENETRATION = [0.1, 0.25, 0.33][EXP_NUM]
 
 vehicles = VehicleParams()
 vehicles.add(
-    veh_id="human",     # vehicle ID "human"으로 고정
+    veh_id="human",     # vehicle ID "human"으로 고정!
     acceleration_controller=(IDMController, {
         "noise": 0.2
     }),
@@ -65,20 +65,23 @@ inflow.add(
     edge="inflow_highway",
     vehs_per_hour=FLOW_RATE,
     departLane="free",
-    departSpeed=10)
+    departSpeed=10,
+    speed_mode=31)
 inflow.add(
     veh_type="rl",
     edge="inflow_highway",
     vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
     departLane="free",
-    departSpeed=10)
+    departSpeed=10,
+    speed_mode=31)
 # 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_merge",
     vehs_per_hour=100,
     departLane="free",
-    departSpeed=7.5)
+    departSpeed=7.5,
+    speed_mode=31)
 
 
 flow_params = dict(
@@ -134,6 +137,6 @@ flow_params = dict(
         spacing="uniform",
         perturbation=5.0,
     ),
-    
+
     tls=traffic_lights
 )
