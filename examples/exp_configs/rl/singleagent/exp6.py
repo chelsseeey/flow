@@ -25,8 +25,6 @@ vehicles.add(
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
         decel=2.5,
-        min_gap=2.5,    # 최소 차간 거리 증가
-        tau=1.0         # 시간 간격 추가
     ),
     initial_speed=0,
     num_vehicles=21
