@@ -38,7 +38,7 @@ vehicles.add(
     veh_id="rl",
     acceleration_controller=(RLController, {}),
     car_following_params=SumoCarFollowingParams(
-        speed_mode="obey_safe_speed",
+        speed_mode=31,
     ),
     num_vehicles=0)      # 초기에 0대의 RL 차량
 
@@ -134,4 +134,6 @@ flow_params = dict(
         spacing="uniform",
         perturbation=5.0,
     ),
+    
+    tls=traffic_lights
 )
