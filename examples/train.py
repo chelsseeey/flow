@@ -56,7 +56,7 @@ def parse_args(args):
         '--num_steps', type=int, default=100 ,      # 학습에 사용할 총 time step(단계) 수를 지정
         help='How many total steps to perform learning over')
     parser.add_argument(
-        '--rollout_size', type=int, default=1000,       # 한 번의 학습 배치(rollout)에서 수집할 시뮬레이션 단계(step)의 수를 지정
+        '--rollout_size', type=int, default=100,       # 한 번의 학습 배치(rollout)에서 수집할 시뮬레이션 단계(step)의 수를 지정
         help='How many steps are in a training batch.')
     parser.add_argument(
         '--checkpoint_path', type=str, default=None,         # 이전에 저장한 체크포인트가 있는 디렉터리의 경로를 지정
