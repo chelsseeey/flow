@@ -1,14 +1,10 @@
-"""Figure eight example with traffic lights.
-"""
-
+"""Figure eight example with traffic lights."""
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
 from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
 from flow.envs.multiagent import MultiAgentAccelPOEnv  # 변경
 from flow.networks import FigureEightNetwork
-from flow.utils.registry import make_create_env
-
 
 # time horizon of a single rollout
 HORIZON = 1500
@@ -21,7 +17,7 @@ N_CPUS = 1
 # Here we use one RL-controlled vehicle and 13 human-driven vehicles.
 vehicles = VehicleParams()
 
-# Add the RL-controlled vehicle (using the RLController and SimLaneChangeController)
+# Add the RL-controlled vehicle (using the RLController and StaticLaneChanger)
 vehicles.add(
     veh_id='rl',
     acceleration_controller=(RLController, {}),
@@ -31,6 +27,7 @@ vehicles.add(
         speed_mode=31,  # using the original value (you can change this if needed)
         decel=2.5,
     ),
+    num_vehicles=1
 )
 
 # Add idm vehicles
@@ -109,3 +106,5 @@ flow_params = dict(
     tls=traffic_lights
 )
 
+print("Traffic light parameters:", flow_params['tls'])
+print("Flow parameters:", flow_params)
