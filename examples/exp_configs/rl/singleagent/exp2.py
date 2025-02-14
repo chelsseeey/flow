@@ -1,5 +1,5 @@
 """Figure eight example with traffic lights."""
-from ray.rllib.agents.ppo.ppo_policy import PPOTFPolicy
+from ray.rllib.algorithms.ppo import PPOPolicy
 from ray.tune.registry import register_env
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
@@ -122,7 +122,7 @@ act_space = test_env.action_space
 
 def gen_policy():
     """Generate a policy in RLlib."""
-    return PPOTFPolicy, obs_space, act_space, {}
+    return PPOPolicy, obs_space, act_space, {}
 
 
 # Setup PG with an ensemble of `num_policies` different policy graphs
