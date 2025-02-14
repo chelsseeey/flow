@@ -1,7 +1,8 @@
-"""Figure eight example with traffic lights."""
+"""Figure eight example with traffic lights.
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
+"""
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
@@ -111,6 +112,8 @@ flow_params = dict(
     tls=traffic_lights
 )
 
+"""
+
 create_env, env_name = make_create_env(params=flow_params, version=0)
 
 # Register as rllib env
@@ -120,7 +123,7 @@ test_env = create_env()
 obs_space = test_env.observation_space
 act_space = test_env.action_space
 
-
+# 3. policy 설정
 def gen_policy():
     """Generate a policy in RLlib."""
     return (PPOTFPolicy, 
@@ -138,3 +141,5 @@ def policy_mapping_fn(_):
     return 'av'
 
 POLICIES_TO_TRAIN = ['av']
+
+"""
