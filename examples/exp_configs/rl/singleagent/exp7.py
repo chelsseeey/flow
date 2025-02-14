@@ -138,6 +138,10 @@ flow_params = dict(
             "max_accel": 1.5,
             "max_decel": 1.5,
             "target_velocity": 20,
+            "normalize_obs": True,    # 관찰값 정규화 활성화
+            "clip_actions": True,     # 행동값 클리핑 추가
+            "obs_range": [-5, 5],     # 관찰값 범위 제한
+
         },
     ),
 
@@ -170,7 +174,13 @@ act_space = test_env.action_space
 
 def gen_policy():
     """Generate a policy in RLlib."""
-    return PPOTFPolicy, obs_space, act_space, {}
+    return PPOTFPolicy, obs_space, act_space, {
+        "model": {
+            "fcnet_hiddens": [32, 32],
+            "fcnet_activation": "tanh",  # tanh 활성화 함수로 출력 범위 제한
+        },
+        "vf_share_layers": True,  # 값 함수와 정책 네트워크 층 공유
+    }
 
 POLICY_GRAPHS = {'av': gen_policy()}
 def policy_mapping_fn(_):
