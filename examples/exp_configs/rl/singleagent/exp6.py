@@ -80,7 +80,8 @@ flow_params = dict(
         restart_instance=False
     ),
 
-    # environment related parameters (see flow.core.params.EnvParams)
+
+# Environment parameters.
     env=EnvParams(
         horizon=HORIZON,
         warmup_steps=750,
@@ -89,20 +90,15 @@ flow_params = dict(
             "max_accel": 1,
             "max_decel": 1,
             "ring_length": [220, 270],
-            "num_observed": 2,        # 관찰할 차량 수 지정 (앞, 뒤)
+            "num_observed": 7,        # 관찰할 차량 수 지정 
             "target_velocity": 30     # 목표 속도 설정
         },
     ),
 
-    # network-related parameters (see flow.core.params.NetParams and the
-    # network's documentation or ADDITIONAL_NET_PARAMS component)
+    # Network parameters.
     net=NetParams(
-        additional_params={
-            "length": 260,
-            "lanes": 1,
-            "speed_limit": 30,
-            "resolution": 40,
-        }, ),
+        additional_params=ADDITIONAL_NET_PARAMS.copy(),
+    ),
 
     # vehicles to be placed in the network at the start of a rollout (see
     # flow.core.params.VehicleParams)
