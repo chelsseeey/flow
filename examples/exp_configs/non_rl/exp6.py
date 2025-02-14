@@ -8,7 +8,7 @@ point before exiting the network.
 from flow.core.params import SumoParams, EnvParams, \
     NetParams, InitialConfig, InFlows, SumoCarFollowingParams, TrafficLightParams
 from flow.core.params import VehicleParams
-from flow.controllers import IDMController
+from flow.controllers import IDMController, RLController
 from flow.envs.merge import MergePOEnv, ADDITIONAL_ENV_PARAMS
 from flow.networks import MergeNetwork
 
@@ -17,6 +17,7 @@ from flow.networks import MergeNetwork
 # - 1: 25% RL penetration, 13 max controllable vehicles
 # - 2: 33% RL penetration, 17 max controllable vehicles
 EXP_NUM = 0
+
 
 # inflow rate at the highway
 FLOW_RATE = 2000
@@ -33,6 +34,13 @@ vehicles.add(
         speed_mode=7,
     ),
     num_vehicles=5)
+vehicles.add(
+    veh_id="rl",
+    acceleration_controller=(RLController, {}),
+    car_following_params=SumoCarFollowingParams(
+        speed_mode="obey_safe_speed",
+    ),
+    num_vehicles=0)      # 초기에 0대의 RL 차량
 
 # 신호등 설정 추가
 traffic_lights = TrafficLightParams(baseline=False)
