@@ -44,7 +44,7 @@ traffic_lights.add(
 
 inflow = InFlows()
 inflow.add(
-    veh_type="human",
+    veh_type="idm",
     edge="inflow_highway",
     vehs_per_hour=FLOW_RATE,
     departLane="free",
