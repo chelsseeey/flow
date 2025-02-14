@@ -25,7 +25,8 @@ vehicles.add(
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
         decel=2.5,
-        min_gap=0
+        min_gap=2.5,    # 최소 차간 거리 증가
+        tau=1.0         # 시간 간격 추가
     ),
     initial_speed=0,
     num_vehicles=21
@@ -88,6 +89,8 @@ flow_params = dict(
             "max_accel": 1,
             "max_decel": 1,
             "ring_length": [220, 270],
+            "num_observed": 2,        # 관찰할 차량 수 지정 (앞, 뒤)
+            "target_velocity": 30     # 목표 속도 설정
         },
     ),
 
