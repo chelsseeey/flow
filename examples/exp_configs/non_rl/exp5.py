@@ -97,10 +97,9 @@ flow_params = dict(
     # parameters specifying the positioning of vehicles upon initialization/
     # reset (see flow.core.params.InitialConfig)
     initial=InitialConfig(
-        bunching=20,
-        
-     # 신호등 설정 반영
-    tls=traffic_lights
+        bunching=20
 
     ),
+    
+    tls=traffic_lights
 )
