@@ -31,7 +31,7 @@ vehicles.add(
         "noise": 0.2
     }),
     car_following_params=SumoCarFollowingParams(
-        speed_mode=7,
+        speed_mode=31,
     ),
     num_vehicles=5)
 vehicles.add(
@@ -58,17 +58,6 @@ traffic_lights.add(
     ]
 )
 
-human_params = SumoCarFollowingParams(
-    speed_mode=31,
-    accel=2.6,
-    decel=4.5,
-)
-
-rl_params = SumoCarFollowingParams(
-    speed_mode=31,
-    accel=2.6,
-    decel=4.5,
-)
 
 inflow = InFlows()
 # 고속도로 진입 차량
@@ -77,24 +66,21 @@ inflow.add(
     edge="inflow_highway",
     vehs_per_hour=FLOW_RATE,
     departLane="free",
-    departSpeed=10,
-    car_following_params=human_params)
+    departSpeed=10)
 inflow.add(
     veh_type="rl",
     edge="inflow_highway",
     vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
     departLane="free",
     departSpeed=10,
-    speed_mode=31,
-    car_following_params=rl_params)
+    speed_mode=31)
 # 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_merge",
     vehs_per_hour=100,
     departLane="free",
-    departSpeed=7.5,
-    car_following_params=human_params)
+    departSpeed=7.5)
 
 
 flow_params = dict(
