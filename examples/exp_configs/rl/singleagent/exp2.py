@@ -1,6 +1,6 @@
 """Figure eight example with traffic lights."""
 from ray.rllib.agents.ppo import PPOTrainer
-from ray.rllib.agents.ppo.ppo_policy import PPOTFPolicy 
+from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
@@ -23,7 +23,7 @@ N_CPUS = 1
 # Here we use one RL-controlled vehicle and 13 human-driven vehicles.
 vehicles = VehicleParams()
 
-# Add the RL-controlled vehicle (using the RLController and StaticLaneChanger)
+# Add the RL-controlled vehicle (using the RLController and SimLaneChangeController)
 vehicles.add(
     veh_id='rl',
     acceleration_controller=(RLController, {}),
@@ -128,7 +128,7 @@ def gen_policy():
             act_space, 
             {})
 
-# Setup PG with an ensemble of `num_policies` different policy graphs
+# Setup policy graphs
 POLICY_GRAPHS = {
     'av': gen_policy()
 }
