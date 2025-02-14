@@ -18,12 +18,14 @@ vehicles = VehicleParams()
 
 # Add idm vehicles
 vehicles.add(
+        veh_id='rl',
         acceleration_controller=(RLController, {}),
         routing_controller=(ContinuousRouter, {}),
         num_vehicles=1)
 
 # Add idm vehicles
 vehicles.add(
+        veh_id='idm',
         acceleration_controller=(IDMController, {
             "noise": 0.2
         }),
