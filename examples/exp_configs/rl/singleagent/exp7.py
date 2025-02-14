@@ -43,10 +43,16 @@ vehicles = VehicleParams()
 vehicles.add(
     veh_id="human",
     acceleration_controller=(IDMController, {
-        "noise": 0.2
+        "noise": 0.2,
+        "v0": 20,           # 목표 속도 지정
+        "T": 1,             # 시간 간격
+        "a": 1.5,           # 최대 가속도
+        "b": 1.5,           # 편안한 감속도
     }),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
+        accel=1.5,          # 가속도 제한
+        decel=1.5,          # 감속도 제한
     ),
     num_vehicles=5)      # 초기에 5대의 IDM 차량
 vehicles.add(
@@ -127,6 +133,7 @@ flow_params = dict(
             "max_decel": 1.5,
             "target_velocity": 20,
             "num_rl": NUM_RL,
+            "norm_obs": True,    # 관찰값 정규화 추가
         },
     ),
 
