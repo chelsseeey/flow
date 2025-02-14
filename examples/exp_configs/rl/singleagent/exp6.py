@@ -7,7 +7,7 @@ from flow.envs import WaveAttenuationPOEnv
 from flow.networks import RingNetwork
 
 # time horizon of a single rollout
-HORIZON = 3000
+HORIZON = 1500
 # number of rollouts per training iteration
 N_ROLLOUTS = 20
 # number of parallel workers
@@ -90,6 +90,8 @@ flow_params = dict(
             "max_accel": 1,
             "max_decel": 1,
             "ring_length": [220, 270],
+            "num_observed": 2,        # Add observation parameter
+            "target_velocity": 4     # Add target velocity parameter
         },
     ),
 
