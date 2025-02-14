@@ -18,29 +18,20 @@ vehicles = VehicleParams()
 
 # Add idm vehicles
 vehicles.add(
-    veh_id='idm',
-    acceleration_controller=(IDMController, {"noise": 0.2}),
-    lane_change_controller=(StaticLaneChanger, {}),
-    routing_controller=(ContinuousRouter, {}),
-    car_following_params=SumoCarFollowingParams(
-        speed_mode=7,
-        decel=2.5,
-    ),
-    initial_speed=0,
-    num_vehicles=21
-)
+        acceleration_controller=(RLController, {}),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=1)
 
-# Add the RL-controlled vehicle (using the RLController and StaticLaneChanger)
+# Add idm vehicles
 vehicles.add(
-    veh_id='rl',
-    acceleration_controller=(RLController, {}),
-    lane_change_controller=(StaticLaneChanger, {}),
-    routing_controller=(ContinuousRouter, {}),
-    car_following_params=SumoCarFollowingParams(
-        speed_mode=31,  # using the original value (you can change this if needed)
-        decel=2.5,
-    ),
-)
+        acceleration_controller=(IDMController, {
+            "noise": 0.2
+        }),
+        car_following_params=SumoCarFollowingParams(
+            min_gap=0
+        ),
+        routing_controller=(ContinuousRouter, {}),
+        num_vehicles=21)
 
 # Define traffic light settings.
 traffic_lights = TrafficLightParams(baseline=False)
