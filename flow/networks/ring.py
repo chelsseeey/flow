@@ -76,7 +76,7 @@ class RingNetwork(Network):
             "id": "bottom",
             "x": 0,
             "y": -r,
-            "type": "priority"  # Changed from traffic_light
+            "type": "traffic_light"  # Changed from traffic_light
         }, {
             "id": "right",
             "x": r,

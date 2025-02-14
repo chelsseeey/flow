@@ -46,7 +46,7 @@ vehicles.add(
 # 신호등 설정 추가
 traffic_lights = TrafficLightParams(baseline=False)
 traffic_lights.add(
-    node_id="center",  # Figure Eight의 교차점 노드
+    node_id="bottom",  # Figure Eight의 교차점 노드
     tls_type="static",  # 고정 주기 신호등
     programID="1",  # 프로그램 ID
     phases=[
