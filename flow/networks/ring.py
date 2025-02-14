@@ -75,7 +75,8 @@ class RingNetwork(Network):
         nodes = [{
             "id": "bottom",
             "x": 0,
-            "y": -r
+            "y": -r,
+            "type": "traffic_light"  # 신호등 노드로 설정
         }, {
             "id": "right",
             "x": r,
