@@ -112,8 +112,8 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-"""
 
+"""
 create_env, env_name = make_create_env(params=flow_params, version=0)
 
 # Register as rllib env
@@ -125,7 +125,7 @@ act_space = test_env.action_space
 
 # 3. policy 설정
 def gen_policy():
-    """Generate a policy in RLlib."""
+    # Generate a policy in RLlib
     return (PPOTFPolicy, 
             obs_space, 
             act_space, 
@@ -137,7 +137,7 @@ POLICY_GRAPHS = {
 }
 
 def policy_mapping_fn(_):
-    """Map a policy in RLlib."""
+    # Map a policy in RLlib.
     return 'av'
 
 POLICIES_TO_TRAIN = ['av']
