@@ -6,7 +6,7 @@ from flow.controllers import IDMController, SimLaneChangeController, ContinuousR
 from flow.core.params import SumoParams, EnvParams, NetParams, InitialConfig
 from flow.core.params import VehicleParams, SumoCarFollowingParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
-from flow.networks.figure_eight import ADDITIONAL_NET_PARAMS
+from flow.networks.ring import ADDITIONAL_NET_PARAMS
 from flow.envs import AccelEnv
 from flow.networks import RingNetwork
 from flow.core.params import TrafficLightParams  # 신호등 설정 추가
@@ -100,6 +100,6 @@ flow_params = dict(
         bunching=20
 
     ),
-    
+
     tls=traffic_lights
 )
