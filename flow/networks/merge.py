@@ -99,7 +99,8 @@ class MergeNetwork(Network):
                 "id": "center",
                 "y": 0,
                 "x": premerge,
-                "radius": 10
+                "radius": 10,
+                "type": "traffic_light"  # Changed to traffic_light
             },
             {
                 "id": "right",

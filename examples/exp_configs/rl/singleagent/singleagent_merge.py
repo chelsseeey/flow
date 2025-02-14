@@ -48,34 +48,36 @@ vehicles.add(
     car_following_params=SumoCarFollowingParams(
         speed_mode="obey_safe_speed",
     ),
-    num_vehicles=5)
+    num_vehicles=5)      # 초기에 5대의 IDM 차량
 vehicles.add(
     veh_id="rl",
     acceleration_controller=(RLController, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode="obey_safe_speed",
     ),
-    num_vehicles=0)
+    num_vehicles=0)      # 초기에 0대의 RL 차량
 
 # Vehicles are introduced from both sides of merge, with RL vehicles entering
 # from the highway portion as well
 inflow = InFlows()
+# 고속도로 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_highway",
-    vehs_per_hour=(1 - RL_PENETRATION) * FLOW_RATE,
+    vehs_per_hour=(1 - RL_PENETRATION) * FLOW_RATE, # 1800 vehicles/hour (90%)
     departLane="free",
     departSpeed=10)
 inflow.add(
     veh_type="rl",
     edge="inflow_highway",
-    vehs_per_hour=RL_PENETRATION * FLOW_RATE,
+    vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
     departLane="free",
     departSpeed=10)
+# 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_merge",
-    vehs_per_hour=100,
+    vehs_per_hour=100,   # 100 vehicles/hour
     departLane="free",
     departSpeed=7.5)
 

@@ -1,52 +1,35 @@
+"""Example of a merge network with human-driven vehicles.
+
+In the absence of autonomous vehicles, the network exhibits properties of
+convective instability, with perturbations propagating upstream from the merge
+point before exiting the network.
 """
-Used as an example of ring experiment.
 
-"""
-from flow.controllers import IDMController, SimLaneChangeController, ContinuousRouter
-from flow.core.params import SumoParams, EnvParams, NetParams, InitialConfig
-from flow.core.params import VehicleParams, SumoCarFollowingParams
-from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS
-from flow.networks.ring import ADDITIONAL_NET_PARAMS
-from flow.envs import AccelEnv
-from flow.networks import RingNetwork
-from flow.core.params import TrafficLightParams  # 신호등 설정 추가
-from flow.controllers.rlcontroller import RLController
+from flow.core.params import SumoParams, EnvParams, \
+    NetParams, InitialConfig, InFlows, SumoCarFollowingParams, TrafficLightParams
+from flow.core.params import VehicleParams
+from flow.controllers import IDMController
+from flow.envs.merge import MergePOEnv, ADDITIONAL_ENV_PARAMS
+from flow.networks import MergeNetwork
 
-
+# inflow rate at the highway
+FLOW_RATE = 2000
 
 vehicles = VehicleParams()
-
-# RL 차량 추가 (1대)
-vehicles.add(
-    veh_id="rl",
-    acceleration_controller=(RLController, {}),  # RLController 추가
-    lane_change_controller=(SimLaneChangeController, {}),  # 필요 시 RL 컨트롤러로 변경
-    routing_controller=(ContinuousRouter, {}),
-    car_following_params=SumoCarFollowingParams(
-        speed_mode=31,
-        decel=2.5,
-    ),
-    num_vehicles=1  # RL 차량 1대
-)
-
-# 기존 IDM 차량 추가 (21대)
 vehicles.add(
     veh_id="idm",
-    acceleration_controller=(IDMController, {}),
-    lane_change_controller=(SimLaneChangeController, {}),
-    routing_controller=(ContinuousRouter, {}),
+    acceleration_controller=(IDMController, {
+        "noise": 0.2
+    }),
     car_following_params=SumoCarFollowingParams(
         speed_mode=7,
-        decel=2.5,
     ),
-    initial_speed=0,
-    num_vehicles=21
-)
+    num_vehicles=5)
 
 # 신호등 설정 추가
 traffic_lights = TrafficLightParams(baseline=False)
 traffic_lights.add(
-    node_id="bottom",  # 신호등 노드
+    node_id="center",  # 신호등 노드
     tls_type="static",  # 고정 주기 신호등
     programID="1",  # 프로그램 ID
     phases=[
@@ -59,15 +42,30 @@ traffic_lights.add(
     ]
 )
 
+inflow = InFlows()
+inflow.add(
+    veh_type="human",
+    edge="inflow_highway",
+    vehs_per_hour=FLOW_RATE,
+    departLane="free",
+    departSpeed=10)
+inflow.add(
+    veh_type="human",
+    edge="inflow_merge",
+    vehs_per_hour=100,
+    departLane="free",
+    departSpeed=7.5)
+
+
 flow_params = dict(
     # name of the experiment
-    exp_tag='ring_with_lights',
+    exp_tag='merge_with_lights',
 
     # name of the flow environment the experiment is running on
-    env_name=AccelEnv,
+    env_name=MergePOEnv,
 
     # name of the network class the experiment is running on
-    network=RingNetwork,
+    network=MergeNetwork,
 
     # simulator that is used by the experiment
     simulator='traci',
@@ -75,19 +73,31 @@ flow_params = dict(
     # sumo-related parameters (see flow.core.params.SumoParams)
     sim=SumoParams(
         render=True,
-        sim_step=0.1,
+        emission_path="./data/",
+        sim_step=0.2,
+        restart_instance=False,
     ),
 
     # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
-        horizon=100000000,
+        horizon=3600,
         additional_params=ADDITIONAL_ENV_PARAMS,
+        sims_per_step=5,
+        warmup_steps=0,
     ),
 
     # network-related parameters (see flow.core.params.NetParams and the
     # network's documentation or ADDITIONAL_NET_PARAMS component)
     net=NetParams(
-        additional_params=ADDITIONAL_NET_PARAMS.copy(),
+        inflows=inflow,
+        additional_params={
+            "merge_length": 100,
+            "pre_merge_length": 500,
+            "post_merge_length": 100,
+            "merge_lanes": 1,
+            "highway_lanes": 1,
+            "speed_limit": 30,
+        },
     ),
 
     # vehicles to be placed in the network at the start of a rollout (see
@@ -97,9 +107,7 @@ flow_params = dict(
     # parameters specifying the positioning of vehicles upon initialization/
     # reset (see flow.core.params.InitialConfig)
     initial=InitialConfig(
-        bunching=20
-
+        spacing="uniform",
+        perturbation=5.0,
     ),
-
-    tls=traffic_lights
 )
