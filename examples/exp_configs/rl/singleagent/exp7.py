@@ -3,6 +3,11 @@
 Trains a a small percentage of rl vehicles to dissipate shockwaves caused by
 on-ramp merge to a single lane open highway network.
 """
+
+from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
+from ray.tune.registry import register_env
+
 from flow.core.params import SumoParams, EnvParams, InitialConfig
 from flow.core.params import NetParams, InFlows, SumoCarFollowingParams, TrafficLightParams
 from flow.networks.merge import ADDITIONAL_NET_PARAMS
@@ -10,6 +15,7 @@ from flow.core.params import VehicleParams
 from flow.controllers import IDMController, RLController
 from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
+from flow.utils.registry import make_create_env
 
 # experiment number
 # - 0: 10% RL penetration,  5 max controllable vehicles
@@ -154,3 +160,21 @@ flow_params = dict(
 
     tls=traffic_lights
 )
+
+create_env, env_name = make_create_env(params=flow_params, version=0)
+
+# Register as rllib env
+register_env(env_name, create_env)
+
+test_env = create_env()
+obs_space = test_env.observation_space
+act_space = test_env.action_space
+
+def gen_policy():
+    """Generate a policy in RLlib."""
+    return PPOTFPolicy, obs_space, act_space, {}
+
+POLICY_GRAPHS = {'av': gen_policy()}
+def policy_mapping_fn(_):
+    """Map a policy in RLlib."""
+    return 'av'
