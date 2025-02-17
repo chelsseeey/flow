@@ -168,8 +168,16 @@ create_env, env_name = make_create_env(params=flow_params, version=0)
 # Register as rllib env
 register_env(env_name, create_env)
 
+# test_env 생성 전에 custom observation space 정의
+custom_obs_space = Box(
+    low=np.array([-2, -2, -2, 0, -2]),    # 최소값
+    high=np.array([2, 2, 2, 40, 2]),      # 최대값
+    dtype=np.float32
+)
+
+# test_env 생성 후 observation space 교체
 test_env = create_env()
-obs_space = test_env.observation_space
+test_env.observation_space = custom_obs_space  # 커스텀 observation space 적용
 act_space = test_env.action_space
 
 def gen_policy():
@@ -207,12 +215,7 @@ flow_params["env"] = EnvParams(
         "target_velocity": 20,
         "normalize_obs": True,
         "clip_actions": True,
-        "obs_range": [-100, 100],  # 넓은 범위 유지
-        "observation_normalizer": {  # 각 관찰값에 대한 정규화 파라미터
-            "relative_positions": [-1, 1],
-            "relative_velocities": [-10, 10],
-            "lead_speeds": [0, 35],  # 속도 범위
-            "target_speeds": [-2, 2]  # 목표 속도와의 차이
-        }
+        # observation_normalizer 제거하고 단순화
+        "obs_space": custom_obs_space,  # 커스텀 observation space 사용
     },
 )
