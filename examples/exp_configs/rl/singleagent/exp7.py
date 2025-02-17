@@ -1,5 +1,3 @@
-```python
-# filepath: /home/mcnl/Desktop/chaeyoung/flow/examples/exp_configs/rl/singleagent/exp7.py
 """Open merge example.
 
 Trains a a small percentage of rl vehicles to dissipate shockwaves caused by
