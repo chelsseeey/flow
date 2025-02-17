@@ -140,7 +140,7 @@ flow_params = dict(
             "target_velocity": 20,
             "normalize_obs": True,    # 관찰값 정규화 활성화
             "clip_actions": True,     # 행동값 클리핑 추가
-            "obs_range": [-5, 5],     # 관찰값 범위 제한
+            "obs_range": [-100, 100],     # 관찰값 범위 제한
 
         },
     ),
@@ -173,18 +173,38 @@ obs_space = test_env.observation_space
 act_space = test_env.action_space
 
 def gen_policy():
-    """Generate a policy in RLlib."""
+    """Generate a policy in RLlib with observation normalization."""
     return PPOTFPolicy, obs_space, act_space, {
         "model": {
-            "fcnet_hiddens": [32, 32],
-            "fcnet_activation": "tanh",  # tanh 활성화 함수로 출력 범위 제한
+            "fcnet_hiddens": [64, 64],  # 네트워크 크기 증가
+            "fcnet_activation": "tanh",
+            "custom_preprocessor": "flatten",  # 관찰 전처리기 추가
+            "custom_model_config": {
+                "normalize_observations": True,
+                "observation_range": [-100, 100],
+            },
         },
-        "vf_share_layers": True,  # 값 함수와 정책 네트워크 층 공유
+        "vf_share_layers": True,
+        "gamma": 0.99,                  # 할인율
+        "lr": 5e-5,                     # 학습률
+        "num_sgd_iter": 10,             # SGD 반복 횟수
+        "train_batch_size": 4000,       # 배치 크기
+        "sgd_minibatch_size": 128,      # 미니배치 크기
+        "lambda": 0.95,                 # GAE 파라미터
+        "clip_param": 0.2,              # PPO 클리핑 파라미터
+        "vf_loss_coeff": 1.0,           # 가치 함수 손실 계수
+        "entropy_coeff": 0.01,          # 엔트로피 계수
+        "observation_filter": "NoFilter",# 관찰 필터 비활성화
     }
 
-POLICY_GRAPHS = {'av': gen_policy()}
-def policy_mapping_fn(_):
-    """Map a policy in RLlib."""
+# 정책 그래프 설정
+POLICY_GRAPHS = {
+    'av': gen_policy()
+}
+
+def policy_mapping_fn(agent_id):
+    """Map agent IDs to policy IDs."""
     return 'av'
 
-POLICIES_TO_TRAIN = ['av']  
+# 학습할 정책 리스트
+POLICIES_TO_TRAIN = ['av']
