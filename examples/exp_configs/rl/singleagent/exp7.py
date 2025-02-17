@@ -172,6 +172,16 @@ custom_obs_space = Box(
     dtype=np.float32
 )
 
+create_env, env_name = make_create_env(params=flow_params, version=0)
+register_env(env_name, create_env)
+
+# 환경 생성 후, 얻어온 observation_space를 직접 교체
+## CHANGED: test_env.observation_space를 custom_obs_space로 설정
+test_env = create_env()
+test_env.observation_space = custom_obs_space
+obs_space = test_env.observation_space
+act_space = test_env.action_space
+
 def gen_policy():
     """Generate a policy in RLlib with observation normalization."""
     return PPOTFPolicy, obs_space, act_space, {
@@ -205,7 +215,6 @@ flow_params["env"] = EnvParams(
         "target_velocity": 20,
         "normalize_obs": True,
         "clip_actions": True,
-        "obs_range": [-100, 100],  # 범위 축소
     },
 )
 
