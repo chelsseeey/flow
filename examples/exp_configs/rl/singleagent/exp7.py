@@ -7,6 +7,7 @@ on-ramp merge to a single lane open highway network.
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
+import numpy as np
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig
 from flow.core.params import NetParams, InFlows, SumoCarFollowingParams, TrafficLightParams
