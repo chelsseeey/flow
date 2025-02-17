@@ -7,7 +7,6 @@ on-ramp merge to a single lane open highway network.
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
-import numpy as np
 
 from flow.core.params import SumoParams, EnvParams, InitialConfig
 from flow.core.params import NetParams, InFlows, SumoCarFollowingParams, TrafficLightParams
@@ -17,7 +16,6 @@ from flow.controllers import IDMController, RLController
 from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
 from flow.utils.registry import make_create_env
-from gym.spaces import Box
 
 # experiment number
 # - 0: 10% RL penetration,  5 max controllable vehicles
@@ -170,35 +168,6 @@ create_env, env_name = make_create_env(params=flow_params, version=0)
 # Register as rllib env
 register_env(env_name, create_env)
 
-# test_env 생성 전에 custom observation space 정의
-custom_obs_space = Box(
-    low=np.array([-2, -2, -2, 0, -2]),    # 최소값
-    high=np.array([2, 2, 2, 40, 2]),      # 최대값
-    dtype=np.float32
-)
-
-
-# 환경 파라미터도 수정
-flow_params["env"] = EnvParams(
-    horizon=HORIZON,
-    sims_per_step=5,
-    warmup_steps=50,  # 워밍업 스텝 추가
-    additional_params={
-        "max_accel": 1.5,
-        "max_decel": 1.5,
-        "target_velocity": 20,
-        "normalize_obs": True,
-        "clip_actions": True,
-        # observation_normalizer 제거하고 단순화
-        "obs_space": custom_obs_space,  # 커스텀 observation space 사용
-    },
-)
-
-# 9. 환경 생성 및 등록
-create_env, env_name = make_create_env(params=flow_params, version=0)
-register_env(env_name, create_env)
-
-# 10. Observation/Action Space 설정
 test_env = create_env()
 obs_space = test_env.observation_space
 act_space = test_env.action_space
@@ -211,10 +180,31 @@ def gen_policy():
             "fcnet_activation": "tanh",
             # custom_preprocessor 제거
             "vf_share_layers": True,
+            "preprocessor_pref": None,  # 기본 전처리기 사용
         },
         "gamma": 0.99,
         "lr": 5e-5,
         "num_sgd_iter": 10,
         "train_batch_size": 4000,
-        "observation_filter": "MeanStdFilter",
+        "sgd_minibatch_size": 128,
+        "lambda": 0.95,
+        "clip_param": 0.2,
+        "vf_loss_coeff": 1.0,
+        "entropy_coeff": 0.01,
+        "observation_filter": "MeanStdFilter",  # NoFilter 대신 MeanStdFilter 사용
     }
+
+# 환경 파라미터도 수정
+flow_params["env"] = EnvParams(
+    horizon=HORIZON,
+    sims_per_step=5,
+    warmup_steps=50,  # 워밍업 스텝 추가
+    additional_params={
+        "max_accel": 1.5,
+        "max_decel": 1.5,
+        "target_velocity": 20,
+        "normalize_obs": True,
+        "clip_actions": True,
+        "obs_range": [-100, 100],  # 범위 축소
+    },
+)
