@@ -1,23 +1,46 @@
+```python
+# filepath: /home/mcnl/Desktop/chaeyoung/flow/examples/exp_configs/rl/singleagent/exp7.py
 """Open merge example.
 
 Trains a a small percentage of rl vehicles to dissipate shockwaves caused by
 on-ramp merge to a single lane open highway network.
 """
 
+import numpy as np
+from gym.spaces import Box
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.tune.registry import register_env
 
-from flow.core.params import SumoParams, EnvParams, InitialConfig
-from flow.core.params import NetParams, InFlows, SumoCarFollowingParams, TrafficLightParams
+from flow.core.params import (SumoParams, EnvParams, InitialConfig,
+                              NetParams, InFlows, SumoCarFollowingParams,
+                              TrafficLightParams, VehicleParams)
 from flow.networks.merge import ADDITIONAL_NET_PARAMS
-from flow.core.params import VehicleParams
 from flow.controllers import IDMController, RLController
 from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
 from flow.utils.registry import make_create_env
-import numpy as np
-from gym.spaces import Box
+
+# 사용자 정의 환경 클래스
+class MyCustomMergePOEnv(MultiAgentMergePOEnv):
+    """커스텀 관측 공간을 갖는 MultiAgentMergePOEnv."""
+    def __init__(self, env_params, sim_params, network, simulator="traci"):
+        super().__init__(env_params, sim_params, network, simulator)
+        # 원하는 관측 범위를 여기서 재정의합니다
+        self._custom_obs_space = Box(
+            low=np.array([-100, -100, -100, -100, -100], dtype=np.float32),
+            high=np.array([100, 100, 100, 100, 100], dtype=np.float32),
+            dtype=np.float32
+        )
+
+    @property
+    def observation_space(self):
+        return self._custom_obs_space
+
+    @observation_space.setter
+    def observation_space(self, value):
+        # 필요할 경우 override 가능
+        self._custom_obs_space = value
 
 # experiment number
 # - 0: 10% RL penetration,  5 max controllable vehicles
@@ -52,7 +75,7 @@ vehicles.add(
     veh_id="human",
     acceleration_controller=(IDMController, {
         "noise": 0.2,
-        "v0": 20,           # 목표 속도 지정
+        "v0": 20,           # 목표 속도
         "T": 1,             # 시간 간격
         "a": 1.5,           # 최대 가속도
         "b": 1.5,           # 편안한 감속도
@@ -62,76 +85,63 @@ vehicles.add(
         accel=1.5,          # 가속도 제한
         decel=1.5,          # 감속도 제한
     ),
-    num_vehicles=5)      # 초기에 5대의 IDM 차량
+    num_vehicles=5)      # 초기 IDM 차량
 vehicles.add(
     veh_id="rl",
     acceleration_controller=(RLController, {}),
     car_following_params=SumoCarFollowingParams(
         speed_mode=31,
     ),
-    num_vehicles=0)      # 초기에 0대의 RL 차량
+    num_vehicles=0)      # 초기 RL 차량은 0
 
-# 신호등 설정 추가
+# 신호등 설정
 traffic_lights = TrafficLightParams(baseline=False)
 traffic_lights.add(
-    node_id="center",  # 신호등 노드
-    tls_type="static",  # 고정 주기 신호등
-    programID="1",  # 프로그램 ID
+    node_id="center",
+    tls_type="static",
+    programID="1",
     phases=[
-        {"duration": "5", "state": "GrGr"},  # 가로 초록
-        {"duration": "3", "state": "yrGr"},   # 가로 노랑
-        {"duration": "2", "state": "rrrr"},   # 모두 빨강
-        {"duration": "5", "state": "rGrG"},  # 세로 초록
-        {"duration": "3", "state": "ryrG"},   # 세로 노랑
-        {"duration": "2", "state": "rrrr"}    # 모두 빨강
+        {"duration": "5", "state": "GrGr"},
+        {"duration": "3", "state": "yrGr"},
+        {"duration": "2", "state": "rrrr"},
+        {"duration": "5", "state": "rGrG"},
+        {"duration": "3", "state": "ryrG"},
+        {"duration": "2", "state": "rrrr"}
     ]
 )
 
-# Vehicles are introduced from both sides of merge, with RL vehicles entering
-# from the highway portion as well
+# 교통 흐름 설정
 inflow = InFlows()
-# 고속도로 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_highway",
-    vehs_per_hour=(1 - RL_PENETRATION) * FLOW_RATE, # 1800 vehicles/hour (90%)
+    vehs_per_hour=(1 - RL_PENETRATION) * FLOW_RATE,
     departLane="free",
     departSpeed=10)
 inflow.add(
     veh_type="rl",
     edge="inflow_highway",
-    vehs_per_hour=RL_PENETRATION * FLOW_RATE, # 200 vehicles/hour (10%)
+    vehs_per_hour=RL_PENETRATION * FLOW_RATE,
     departLane="free",
     departSpeed=10)
-# 합류 지점 진입 차량
 inflow.add(
     veh_type="human",
     edge="inflow_merge",
-    vehs_per_hour=100,   # 100 vehicles/hour
+    vehs_per_hour=100,
     departLane="free",
     departSpeed=7.5)
 
+# flow_params 정의
 flow_params = dict(
-    # name of the experiment
-    exp_tag='merge_with_lights',
-
-    # name of the flow environment the experiment is running on
-    env_name=MultiAgentMergePOEnv,
-
-    # name of the network class the experiment is running on
+    exp_tag="merge_with_lights",
+    env_name=MyCustomMergePOEnv,   # 기본 MultiAgentMergePOEnv 대신 우리가 만든 커스텀 환경
     network=MergeNetwork,
-
-    # simulator that is used by the experiment
-    simulator='traci',
-
-    # sumo-related parameters (see flow.core.params.SumoParams)
+    simulator="traci",
     sim=SumoParams(
         sim_step=0.2,
         render=False,
         restart_instance=True,
     ),
-
-    # environment related parameters (see flow.core.params.EnvParams)
     env=EnvParams(
         horizon=HORIZON,
         sims_per_step=5,
@@ -140,45 +150,26 @@ flow_params = dict(
             "max_accel": 1.5,
             "max_decel": 1.5,
             "target_velocity": 20,
-            "normalize_obs": True,    # 관찰값 정규화 활성화
-            "clip_actions": True,     # 행동값 클리핑 추가
-            "obs_range": [-100, 100],     # 관찰값 범위 제한
-
+            "normalize_obs": True,
+            "clip_actions": True,
+            "obs_range": [-100, 100],
         },
     ),
-
-    # network-related parameters (see flow.core.params.NetParams and the
-    # network's documentation or ADDITIONAL_NET_PARAMS component)
     net=NetParams(
         inflows=inflow,
         additional_params=additional_net_params,
     ),
-
-    # vehicles to be placed in the network at the start of a rollout (see
-    # flow.core.params.VehicleParams)
     veh=vehicles,
-
-    # parameters specifying the positioning of vehicles upon initialization/
-    # reset (see flow.core.params.InitialConfig)
     initial=InitialConfig(),
-
     tls=traffic_lights
 )
 
-# 환경 생성 전에 Box 범위 지정
-custom_obs_space = Box(
-    low=np.array([-100, -100, -100, -100, -100], dtype=np.float32),
-    high=np.array([100, 100, 100, 100, 100], dtype=np.float32),
-    dtype=np.float32
-)
-
+# 환경 생성 및 등록
 create_env, env_name = make_create_env(params=flow_params, version=0)
 register_env(env_name, create_env)
-
-# 환경 생성 후, 얻어온 observation_space를 직접 교체
-## CHANGED: test_env.observation_space를 custom_obs_space로 설정
 test_env = create_env()
-test_env.observation_space = custom_obs_space
+
+# Observation/Action spaces
 obs_space = test_env.observation_space
 act_space = test_env.action_space
 
@@ -188,9 +179,8 @@ def gen_policy():
         "model": {
             "fcnet_hiddens": [64, 64],
             "fcnet_activation": "tanh",
-            # custom_preprocessor 제거
             "vf_share_layers": True,
-            "preprocessor_pref": None,  # 기본 전처리기 사용
+            "preprocessor_pref": None,
         },
         "gamma": 0.99,
         "lr": 5e-5,
@@ -201,14 +191,14 @@ def gen_policy():
         "clip_param": 0.2,
         "vf_loss_coeff": 1.0,
         "entropy_coeff": 0.01,
-        "observation_filter": "MeanStdFilter",  # NoFilter 대신 MeanStdFilter 사용
+        "observation_filter": "MeanStdFilter",
     }
 
-# 환경 파라미터도 수정
+# 추가로 warmup_steps수정
 flow_params["env"] = EnvParams(
     horizon=HORIZON,
     sims_per_step=5,
-    warmup_steps=50,  # 워밍업 스텝 추가
+    warmup_steps=50,
     additional_params={
         "max_accel": 1.5,
         "max_decel": 1.5,
@@ -218,11 +208,10 @@ flow_params["env"] = EnvParams(
     },
 )
 
+# 최종 환경 재생성 후 등록
 create_env, env_name = make_create_env(params=flow_params, version=0)
-
-# Register as rllib env
 register_env(env_name, create_env)
-
 test_env = create_env()
+
 obs_space = test_env.observation_space
 act_space = test_env.action_space
