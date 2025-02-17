@@ -16,6 +16,8 @@ from flow.controllers import IDMController, RLController
 from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
 from flow.utils.registry import make_create_env
+import numpy as np
+from gym.spaces import Box
 
 # experiment number
 # - 0: 10% RL penetration,  5 max controllable vehicles
@@ -163,14 +165,12 @@ flow_params = dict(
     tls=traffic_lights
 )
 
-create_env, env_name = make_create_env(params=flow_params, version=0)
-
-# Register as rllib env
-register_env(env_name, create_env)
-
-test_env = create_env()
-obs_space = test_env.observation_space
-act_space = test_env.action_space
+# 환경 생성 전에 Box 범위 지정
+custom_obs_space = Box(
+    low=np.array([-100, -100, -100, -100, -100], dtype=np.float32),
+    high=np.array([100, 100, 100, 100, 100], dtype=np.float32),
+    dtype=np.float32
+)
 
 def gen_policy():
     """Generate a policy in RLlib with observation normalization."""
@@ -208,3 +208,12 @@ flow_params["env"] = EnvParams(
         "obs_range": [-100, 100],  # 범위 축소
     },
 )
+
+create_env, env_name = make_create_env(params=flow_params, version=0)
+
+# Register as rllib env
+register_env(env_name, create_env)
+
+test_env = create_env()
+obs_space = test_env.observation_space
+act_space = test_env.action_space
