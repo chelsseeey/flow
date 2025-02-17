@@ -1,7 +1,7 @@
 """Ring road example with traffic lights."""
 from flow.core.params import SumoParams, EnvParams, InitialConfig, NetParams, TrafficLightParams
 from flow.core.params import VehicleParams, SumoCarFollowingParams
-from flow.controllers import IDMController, StaticLaneChanger, ContinuousRouter, RLController
+from flow.controllers import IDMController, SimLaneChangeController, ContinuousRouter, RLController
 from flow.networks.ring import ADDITIONAL_NET_PARAMS
 from flow.envs import WaveAttenuationPOEnv
 from flow.networks import RingNetwork
@@ -16,24 +16,33 @@ N_CPUS = 1
 # We place one autonomous vehicle and 22 human-driven vehicles in the network
 vehicles = VehicleParams()
 
-# Add idm vehicles
+# RL 차량 추가 (1대)
 vehicles.add(
-        veh_id='rl',
-        acceleration_controller=(RLController, {}),
-        routing_controller=(ContinuousRouter, {}),
-        num_vehicles=1)
+    veh_id="rl",
+    acceleration_controller=(RLController, {}),  # RLController 추가
+    lane_change_controller=(SimLaneChangeController, {}),  # 필요 시 RL 컨트롤러로 변경
+    routing_controller=(ContinuousRouter, {}),
+    car_following_params=SumoCarFollowingParams(
+        speed_mode=31,
+        decel=2.5,
+    ),
+    num_vehicles=1  # RL 차량 1대
+)
 
-# Add idm vehicles
+# 기존 IDM 차량 추가 (21대)
 vehicles.add(
-        veh_id='idm',
-        acceleration_controller=(IDMController, {
-            "noise": 0.2
-        }),
-        car_following_params=SumoCarFollowingParams(
-            min_gap=0
-        ),
-        routing_controller=(ContinuousRouter, {}),
-        num_vehicles=21)
+    veh_id="idm",
+    acceleration_controller=(IDMController, {}),
+    lane_change_controller=(SimLaneChangeController, {}),
+    routing_controller=(ContinuousRouter, {}),
+    car_following_params=SumoCarFollowingParams(
+        speed_mode=7,
+        decel=2.5,
+    ),
+    initial_speed=0,
+    num_vehicles=21
+)
+
 
 # Define traffic light settings.
 traffic_lights = TrafficLightParams(baseline=False)

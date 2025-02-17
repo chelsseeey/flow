@@ -24,6 +24,7 @@ class MyCustomMergePOEnv(MultiAgentMergePOEnv):
     """커스텀 관측 공간을 갖는 MultiAgentMergePOEnv."""
     def __init__(self, env_params, sim_params, network, simulator="traci"):
         super().__init__(env_params, sim_params, network, simulator)
+        
         # 원하는 관측 범위를 여기서 재정의합니다
         self._custom_obs_space = Box(
             low=np.array([-1e8]*5, dtype=np.float32),
