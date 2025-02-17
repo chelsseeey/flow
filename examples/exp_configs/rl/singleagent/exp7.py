@@ -140,7 +140,7 @@ flow_params = dict(
             "target_velocity": 20,
             "normalize_obs": True,    # 관찰값 정규화 활성화
             "clip_actions": True,     # 행동값 클리핑 추가
-            "obs_range": [-10, 10],     # 관찰값 범위 제한
+            "obs_range": [-50, 50],     # 관찰값 범위 제한
 
         },
     ),
@@ -205,6 +205,6 @@ flow_params["env"] = EnvParams(
         "target_velocity": 20,
         "normalize_obs": True,
         "clip_actions": True,
-        "obs_range": [-10, 10],  # 범위 축소
+        "obs_range": [-50, 50],  # 범위 축소
     },
 )
