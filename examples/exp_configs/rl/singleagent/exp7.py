@@ -140,7 +140,7 @@ flow_params = dict(
             "target_velocity": 20,
             "normalize_obs": True,    # 관찰값 정규화 활성화
             "clip_actions": True,     # 행동값 클리핑 추가
-            "obs_range": [-50, 50],     # 관찰값 범위 제한
+            "obs_range": [-100, 100],     # 관찰값 범위 제한
 
         },
     ),
@@ -192,6 +192,8 @@ def gen_policy():
         "vf_loss_coeff": 1.0,
         "entropy_coeff": 0.01,
         "observation_filter": "MeanStdFilter",  # NoFilter 대신 MeanStdFilter 사용
+        "normalize_observations": True,  # 관찰값 정규화 활성화
+        "normalize_rewards": False,      # 보상 정규화 비활성화
     }
 
 # 환경 파라미터도 수정
@@ -205,6 +207,12 @@ flow_params["env"] = EnvParams(
         "target_velocity": 20,
         "normalize_obs": True,
         "clip_actions": True,
-        "obs_range": [-50, 50],  # 범위 축소
+        "obs_range": [-100, 100],  # 넓은 범위 유지
+        "observation_normalizer": {  # 각 관찰값에 대한 정규화 파라미터
+            "relative_positions": [-1, 1],
+            "relative_velocities": [-10, 10],
+            "lead_speeds": [0, 35],  # 속도 범위
+            "target_speeds": [-2, 2]  # 목표 속도와의 차이
+        }
     },
 )
