@@ -177,9 +177,30 @@ custom_obs_space = Box(
     dtype=np.float32
 )
 
-# test_env 생성 후 observation space 교체
+
+# 환경 파라미터도 수정
+flow_params["env"] = EnvParams(
+    horizon=HORIZON,
+    sims_per_step=5,
+    warmup_steps=50,  # 워밍업 스텝 추가
+    additional_params={
+        "max_accel": 1.5,
+        "max_decel": 1.5,
+        "target_velocity": 20,
+        "normalize_obs": True,
+        "clip_actions": True,
+        # observation_normalizer 제거하고 단순화
+        "obs_space": custom_obs_space,  # 커스텀 observation space 사용
+    },
+)
+
+# 9. 환경 생성 및 등록
+create_env, env_name = make_create_env(params=flow_params, version=0)
+register_env(env_name, create_env)
+
+# 10. Observation/Action Space 설정
 test_env = create_env()
-test_env.observation_space = custom_obs_space  # 커스텀 observation space 적용
+obs_space = test_env.observation_space
 act_space = test_env.action_space
 
 def gen_policy():
@@ -206,18 +227,8 @@ def gen_policy():
         "normalize_rewards": False,      # 보상 정규화 비활성화
     }
 
-# 환경 파라미터도 수정
-flow_params["env"] = EnvParams(
-    horizon=HORIZON,
-    sims_per_step=5,
-    warmup_steps=50,  # 워밍업 스텝 추가
-    additional_params={
-        "max_accel": 1.5,
-        "max_decel": 1.5,
-        "target_velocity": 20,
-        "normalize_obs": True,
-        "clip_actions": True,
-        # observation_normalizer 제거하고 단순화
-        "obs_space": custom_obs_space,  # 커스텀 observation space 사용
-    },
-)
+# 12. 정책 매핑 설정
+POLICY_GRAPHS = {'av': gen_policy()}
+def policy_mapping_fn(agent_id):
+    return 'av'
+POLICIES_TO_TRAIN = ['av']
