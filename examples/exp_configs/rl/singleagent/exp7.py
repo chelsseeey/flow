@@ -16,6 +16,7 @@ from flow.controllers import IDMController, RLController
 from flow.envs.multiagent import MultiAgentMergePOEnv
 from flow.networks import MergeNetwork
 from flow.utils.registry import make_create_env
+from gym.spaces import Box
 
 # experiment number
 # - 0: 10% RL penetration,  5 max controllable vehicles
