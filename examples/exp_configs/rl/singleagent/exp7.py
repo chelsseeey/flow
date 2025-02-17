@@ -211,24 +211,10 @@ def gen_policy():
             "fcnet_activation": "tanh",
             # custom_preprocessor 제거
             "vf_share_layers": True,
-            "preprocessor_pref": None,  # 기본 전처리기 사용
         },
         "gamma": 0.99,
         "lr": 5e-5,
         "num_sgd_iter": 10,
         "train_batch_size": 4000,
-        "sgd_minibatch_size": 128,
-        "lambda": 0.95,
-        "clip_param": 0.2,
-        "vf_loss_coeff": 1.0,
-        "entropy_coeff": 0.01,
-        "observation_filter": "MeanStdFilter",  # NoFilter 대신 MeanStdFilter 사용
-        "normalize_observations": True,  # 관찰값 정규화 활성화
-        "normalize_rewards": False,      # 보상 정규화 비활성화
+        "observation_filter": "MeanStdFilter",
     }
-
-# 12. 정책 매핑 설정
-POLICY_GRAPHS = {'av': gen_policy()}
-def policy_mapping_fn(agent_id):
-    return 'av'
-POLICIES_TO_TRAIN = ['av']
