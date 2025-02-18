@@ -70,6 +70,14 @@ def main():
         iterations.append(iteration_label)
         collision_counts.append(collision_count)
 
+    # 필터: iteration이 Unknown인 경우는 그래프에 포함하지 않음.
+    filtered_iterations = []
+    filtered_collision_counts = []
+    for itr, coll in zip(iterations, collision_counts):
+        if itr != "Unknown":
+            filtered_iterations.append(itr)
+            filtered_collision_counts.append(coll)
+
     # 그래프 그리기: x축은 iteration, y축은 collision 횟수
     plt.figure(figsize=(8, 5))
     plt.plot(iterations, collision_counts, marker='o', linestyle='-', color='b')
