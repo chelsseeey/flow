@@ -15,7 +15,7 @@ def parse_blocks(log_lines):
     current_iteration = None
 
     for line in log_lines:
-        # End of a block: lines ending with "Result for"
+        # End of a block: lines starting with "Result for"
         if line.startswith("Result for"):
             # Save the existing block if it's in progress
             if current_block_lines:
