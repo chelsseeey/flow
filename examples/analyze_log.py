@@ -51,15 +51,16 @@ def main():
     args = parser.parse_args()
 
     try:
-        with open(args.logfile, "r") as f:
-            log_lines = f.readlines()
+        # 먼저 'utf-8'로 시도
+        try:
+            with open(args.logfile, "r", encoding='utf-8', errors='ignore') as f:
+                log_lines = f.readlines()
+        except UnicodeDecodeError:
+            # 'utf-8' 실패시 'latin-1'로 시도
+            with open(args.logfile, "r", encoding='latin-1') as f:
+                log_lines = f.readlines()
     except Exception as e:
         print(f"Could not open the log file: {e}")
-        return
-
-    blocks = parse_blocks(log_lines)
-    if not blocks:
-        print("No iteration blocks found in the log file.")
         return
 
     print("=== Collision Count Summary ===")
