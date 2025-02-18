@@ -16,22 +16,21 @@ def parse_blocks(log_lines):
 
     for line in log_lines:
         # End of a block: lines ending with "Result for"
-        if line.endswith("Result for"):
+        if line.startswith("Result for"):
             # Save the existing block if it's in progress
             if current_block_lines:
                 blocks.append((current_iteration, current_block_lines))
             # Initialize a new block
-            current_block_lines = [line]
+            current_block_lines = []
             current_iteration = None
         else:
             # Record only if the current block is in progress
-            if current_block_lines:
-                current_block_lines.append(line)
-                # Find training_iteration information within the block if not already found
-                if current_iteration is None and "training_iteration:" in line:
-                    m = re.search(r"training_iteration:\s*(\d+)", line)
-                    if m:
-                        current_iteration = int(m.group(1))
+            current_block_lines.append(line)
+            # Find iteration information within the block if not already found
+            if current_iteration is None and "iter" in line:
+                m = re.search(r"\|\s*(\d+)\s*\|", line)
+                if m:
+                    current_iteration = int(m.group(1))
     # Save the last block
     if current_block_lines:
         blocks.append((current_iteration, current_block_lines))
