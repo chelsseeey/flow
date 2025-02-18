@@ -63,6 +63,8 @@ def main():
         print(f"Could not open the log file: {e}")
         return
 
+    blocks = parse_blocks(log_lines)
+
     print("=== Collision Count Summary ===")
     iterations = []
     collision_counts = []
