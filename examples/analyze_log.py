@@ -12,47 +12,35 @@ def parse_blocks(log_lines):
     """
     blocks = []
     current_block = []
-    current_iter = 1  # Start with iteration 1
-    first_table_found = False
+    current_iter = None
+    collision_count = 0
     
     for i, line in enumerate(log_lines):
-        # Check for first status table
-        if not first_table_found and "+-----------------------------------------+" in line:
-            first_table_found = True
-            blocks.append((current_iter, current_block))
-            current_block = []
-            
-            # Get iteration number from the table
+        # Handle first iteration's collisions
+        if current_iter is None and "Collision detected" in line:
+            collision_count += 1
+            current_block.append(line)
+            current_iter = 1  # First iteration
+        
+        # Check for iteration boundaries in status table
+        if "+" in line and "-" in line and "|" in line:
             try:
-                table_lines = log_lines[i:i+4]
-                for table_line in table_lines:
-                    if "|" in table_line and "iter" in table_line:
-                        current_iter = int(table_line.split("|")[4].strip())
-                        break
-            except (ValueError, IndexError):
-                continue
-                
-        # For subsequent iterations
-        elif first_table_found and "+-----------------------------------------+" in line:
-            try:
-                table_lines = log_lines[i:i+4]
-                for table_line in table_lines:
-                    if "|" in table_line and "iter" in table_line:
-                        iter_num = int(table_line.split("|")[4].strip())
-                        if current_block:
-                            blocks.append((current_iter, current_block))
-                        current_iter = iter_num
-                        current_block = []
-                        break
-            except (ValueError, IndexError):
+                next_line = log_lines[i + 2]  # Skip header line
+                if "|" in next_line and "iter" in next_line:
+                    iter_num = int(next_line.split("|")[4].strip())
+                    if current_iter is not None:
+                        blocks.append((current_iter, current_block))
+                    current_iter = iter_num
+                    current_block = []
+            except (IndexError, ValueError):
                 continue
         
-        # Collect collision information
-        elif "Collision detected" in line:
+        # Collect collisions
+        elif "Collision detected" in line and current_iter is not None:
             current_block.append(line)
     
-    # Add the last block
-    if current_block:
+    # Add final block
+    if current_iter is not None and current_block:
         blocks.append((current_iter, current_block))
     
     return blocks
