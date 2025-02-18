@@ -14,31 +14,27 @@ def parse_blocks(log_lines):
     current_block_lines = []
     current_iteration = None
 
-    for i, line in enumerate(log_lines):
-        # Check for iteration table
-        if "+" in line and "-" in line and "|" in line:
-            try:
-                # Look ahead for iteration number in the table
-                table_lines = log_lines[i:i+4]  # Get next few lines
-                for table_line in table_lines:
-                    if "|" in table_line and "iter" in table_line:
-                        iter_num = int(table_line.split("|")[4].strip())
-                        if current_iteration is not None:
-                            blocks.append((current_iteration, current_block_lines))
-                        current_iteration = iter_num
-                        current_block_lines = []
-                        break
-            except (ValueError, IndexError):
-                continue
-        
-        # Collect collision information
-        elif "Collision detected at time step" in line:
-            current_block_lines.append(line)
-    
-    # Add the last block
-    if current_iteration is not None and current_block_lines:
+    for line in log_lines:
+        # Start of a new block: lines starting with "Result for"
+        if line.startswith("Result for"):
+            # Save the existing block if it's in progress
+            if current_block_lines:
+                blocks.append((current_iteration, current_block_lines))
+            # Initialize a new block
+            current_block_lines = [line]
+            current_iteration = None
+        else:
+            # Record only if the current block is in progress
+            if current_block_lines:
+                current_block_lines.append(line)
+                # Find training_iteration information within the block if not already found
+                if current_iteration is None and "training_iteration:" in line:
+                    m = re.search(r"training_iteration:\s*(\d+)", line)
+                    if m:
+                        current_iteration = int(m.group(1))
+    # Save the last block
+    if current_block_lines:
         blocks.append((current_iteration, current_block_lines))
-    
     return blocks
 
 def count_collisions_in_block(block_lines):
