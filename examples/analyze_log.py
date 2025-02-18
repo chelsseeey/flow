@@ -4,36 +4,32 @@ import matplotlib.pyplot as plt
 
 def parse_blocks(log_lines):
     """
-    Parses log file lines, extracting each iteration block.
-    Each block ends with a line starting with "== Status ==".
-    The block from the file's beginning up to the first "== Status ==" is the first block.
-    Within each block, the iteration number is extracted by searching for the first occurrence of "iter".
-    Returns a list of (iteration, block_lines) tuples for each block.
-    If the iteration number is not found, it is marked as None.
+    Parses log file lines by using lines starting with "Result for" as the end marker for each block.
+    The block from the file's start up to the first "Result for" line is treated as iteration 1.
+    Every time a line starting with "Result for" is encountered:
+      - That line is added to the current block,
+      - The block is closed and assigned the next iteration number (starting at 1),
+      - Then a new block is started.
+    If the file ends without a terminating "Result for" line, the remaining lines are stored with iteration as None.
+    Returns a list of (iteration, block_lines) tuples.
     """
     blocks = []
     current_block_lines = []
-    current_iteration = None
+    iteration_counter = 0
 
     for line in log_lines:
-        # End of the current block is identified by a line starting with "== Status =="
-        if line.startswith("== Status =="):
-            if current_block_lines:
-                blocks.append((current_iteration, current_block_lines))
-            # Start a new block after the end marker
-            current_block_lines = []
-            current_iteration = None
+        if line.startswith("Result for"):
+            current_block_lines.append(line)  # include the ending marker
+            iteration_counter += 1
+            blocks.append((iteration_counter, current_block_lines))
+            current_block_lines = []  # reset block for next iteration
         else:
-            # Append the current line to the block
             current_block_lines.append(line)
-            # Try to extract the iteration number if not already set.
-            if current_iteration is None and "training_iteration:" in line:
-                m = re.search(r"\|\s*(\d+)\s*\|", line)
-                if m:
-                    current_iteration = int(m.group(1))
-    # Add the final block if any lines remain
+    
+    # If there is a leftover block without termination, add it with iteration None.
     if current_block_lines:
-        blocks.append((current_iteration, current_block_lines))
+        blocks.append((None, current_block_lines))
+    
     return blocks
 
 def count_collisions_in_block(block_lines):
@@ -55,6 +51,7 @@ def main():
             with open(args.logfile, "r", encoding="utf-8", errors="ignore") as f:
                 log_lines = f.readlines()
         except UnicodeDecodeError:
+            # 'utf-8' 실패 시 'latin-1'로 시도
             with open(args.logfile, "r", encoding="latin-1") as f:
                 log_lines = f.readlines()
     except Exception as e:
@@ -73,7 +70,7 @@ def main():
         iterations.append(iteration_label)
         collision_counts.append(collision_count)
 
-    # 그래프 그리기
+    # 그래프 그리기: x축은 iteration, y축은 collision 횟수
     plt.figure(figsize=(8, 5))
     plt.plot(iterations, collision_counts, marker='o', linestyle='-', color='b')
     plt.xlabel('Iteration')
