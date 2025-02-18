@@ -15,8 +15,8 @@ def parse_blocks(log_lines):
     current_iteration = None
 
     for line in log_lines:
-        # End of a block: lines starting with "Result for"
-        if line.startswith("Result for"):
+        # End of a block: lines starting with "== Status =="
+        if line.startswith("== Status =="):
             # Save the existing block if it's in progress
             if current_block_lines:
                 blocks.append((current_iteration, current_block_lines))
@@ -61,7 +61,7 @@ def main():
     except Exception as e:
         print(f"Could not open the log file: {e}")
         return
-
+    
     blocks = parse_blocks(log_lines)
 
     print("=== Collision Count Summary ===")
