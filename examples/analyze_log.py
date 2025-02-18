@@ -27,7 +27,7 @@ def parse_blocks(log_lines):
             # Append the current line to the block
             current_block_lines.append(line)
             # Try to extract the iteration number if not already set.
-            if current_iteration is None and "iter" in line:
+            if current_iteration is None and "training_iteration:" in line:
                 m = re.search(r"\|\s*(\d+)\s*\|", line)
                 if m:
                     current_iteration = int(m.group(1))
