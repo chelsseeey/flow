@@ -11,40 +11,36 @@ def parse_blocks(log_lines):
     If the iteration number is not found, it is marked as None.
     """
     blocks = []
-    current_iter = None
-    current_block = []
+    current_block_lines = []
+    current_iteration = None
 
     for i, line in enumerate(log_lines):
-        # 테이블 시작선 탐색
+        # Check for iteration table
         if "+" in line and "-" in line and "|" in line:
-            # 테이블 바로 아래(혹은 아래 2-3줄)에서 iteration 번호 추출
-            # 예: "| PPO_MyCustomMergePOEnv-v2_609b9_00000 | RUNNING  | 203.255.177.230:18593 |     99 | ..."
-            if i + 2 < len(log_lines):
-                table_line = log_lines[i + 2]
-                if "|" in table_line and "iter" in table_line:
-                    try:
+            try:
+                # Look ahead for iteration number in the table
+                table_lines = log_lines[i:i+4]  # Get next few lines
+                for table_line in table_lines:
+                    if "|" in table_line and "iter" in table_line:
                         iter_num = int(table_line.split("|")[4].strip())
-                    except (ValueError, IndexError):
-                        iter_num = None
-                    
-                    # 이전 iteration이 있다면 저장
-                    if current_iter is not None:
-                        blocks.append((current_iter, current_block))
-                    
-                    # 새 iteration 시작
-                    current_iter = iter_num
-                    current_block = []
+                        if current_iteration is not None:
+                            blocks.append((current_iteration, current_block_lines))
+                        current_iteration = iter_num
+                        current_block_lines = []
+                        break
+            except (ValueError, IndexError):
+                continue
         
-        # 충돌 로그 수집: 현재 iteration이 정해진 뒤에만 수집
+        # Collect collision information
         elif "Collision detected at time step" in line:
-            if current_iter is not None:
-                current_block.append(line)
-
-    # 마지막 iteration 블록 추가
-    if current_iter is not None and current_block:
-        blocks.append((current_iter, current_block))
-
+            current_block_lines.append(line)
+    
+    # Add the last block
+    if current_iteration is not None and current_block_lines:
+        blocks.append((current_iteration, current_block_lines))
+    
     return blocks
+
 def count_collisions_in_block(block_lines):
     """
     Counts the number of "Collision detected at time step" occurrences within the given block.
