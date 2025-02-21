@@ -161,8 +161,8 @@ class MultiAgentAccelPOEnv(MultiEnv):
         
         Returns
         -------
-        numpy.ndarray or dict
-            차량의 상태 정보를 포함하는 observation
+        dict
+            각 에이전트의 observation이 포함된 딕셔너리
         """
         self.leader = []
         self.follower = []
@@ -184,8 +184,8 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 self.leader.append(lead_id)
                 lead_speed = self.k.vehicle.get_speed(lead_id)
                 lead_head = self.k.vehicle.get_x_by_id(lead_id) \
-                           - self.k.vehicle.get_x_by_id(rl_id) \
-                           - self.k.vehicle.get_length(rl_id)
+                        - self.k.vehicle.get_x_by_id(rl_id) \
+                        - self.k.vehicle.get_length(rl_id)
 
             # 후행 차량 정보
             follower = self.k.vehicle.get_follower(rl_id)
@@ -207,7 +207,8 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 self.collision_counts
             ])
 
-        return list(obs.values())[0] if len(obs) == 1 else obs
+        # 항상 딕셔너리 형태로 반환
+        return obs
 
     def step(self, rl_actions):
         """Execute one step of the environment.
