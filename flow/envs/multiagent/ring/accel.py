@@ -95,21 +95,33 @@ class MultiAgentAccelPOEnv(MultiEnv):
         
         Returns
         -------
-        bool
-            True if the simulation should end, False otherwise
+        dict
+            각 에이전트의 종료 상태를 포함하는 딕셔너리와 글로벌 done 플래그
         """
+        # Get all RL vehicle IDs
+        rl_ids = self.k.vehicle.get_rl_ids()
+        
+        # Initialize done dictionary
+        dones = {rl_id: False for rl_id in rl_ids}
+        dones['__all__'] = False  # Global done flag
+        
         # Terminate if there were any collisions
         if self.collision_counts > 0:
-            return True
-            
+            dones['__all__'] = True
+            for rl_id in rl_ids:
+                dones[rl_id] = True
+            return dones
+                
         # Check if horizon has been reached
         horizon = self.env_params.horizon
         current_step = self.k.kernel_api.simulation.getTime()
         if current_step >= horizon:
-            return True
-            
-        # Continue simulation otherwise
-        return False
+            dones['__all__'] = True
+            for rl_id in rl_ids:
+                dones[rl_id] = True
+            return dones
+        
+        return dones
 
     def __init__(self, env_params, sim_params, network, simulator='traci'):
         """Initialize the environment.
@@ -211,24 +223,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
         return obs
 
     def step(self, rl_actions):
-        """Execute one step of the environment.
-        
-        Parameters
-        ----------
-        rl_actions : dict
-            각 RL 차량의 가속도 행동
-            
-        Returns
-        -------
-        state : numpy.ndarray or dict
-            새로운 observation
-        rewards : dict
-            각 에이전트의 보상
-        done : bool
-            에피소드 종료 여부
-        info : dict
-            추가 정보
-        """
+        """Execute one step of the environment."""
         try:
             colliding_vehicles = self.k.kernel_api.simulation.getCollidingVehiclesIDList()
             collision_count = self.k.kernel_api.simulation.getCollidingVehiclesNumber()
@@ -251,7 +246,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
 
         states = self.get_state()
         rewards = self.compute_reward(rl_actions, collisions=collision_count)
-        done = self.check_termination()
+        dones = self.check_termination()  # Now returns a dictionary
         
         info = {
             'collision_count': self.collision_counts,
@@ -259,7 +254,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
             'colliding_vehicles': colliding_vehicles
         }
 
-        return states, rewards, done, info
+        return states, rewards, dones, info
 
     def _apply_rl_actions(self, rl_actions):
         """Apply acceleration actions from RL agents."""
