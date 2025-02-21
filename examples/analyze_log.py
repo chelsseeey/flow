@@ -36,7 +36,7 @@ def count_collisions_in_block(block_lines):
     """
     Counts the number of "Collision detected at time step" occurrences within the given block.
     """
-    return sum(1 for line in block_lines if "Collision detected at time step" in line)
+    return sum(1 for line in block_lines if "Warning: Teleporting vehicle 'rl_0'; junction collision with vehicle" in line)
 
 def main():
     parser = argparse.ArgumentParser(
