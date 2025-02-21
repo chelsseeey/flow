@@ -90,6 +90,26 @@ class AdversarialAccelEnv(AccelEnv, MultiEnv):
 class MultiAgentAccelPOEnv(MultiEnv):
     """Multi-agent partially observable acceleration environment with collision detection."""
 
+    def check_termination(self):
+        """Check if the simulation should terminate.
+        
+        Returns
+        -------
+        bool
+            True if the simulation should end, False otherwise
+        """
+        # Terminate if there were any collisions
+        if self.collision_counts > 0:
+            return True
+            
+        # Check if horizon has been reached
+        horizon = self.env_params.horizon
+        if self.k.simulation.step_counter >= horizon:
+            return True
+            
+        # Continue simulation otherwise
+        return False
+
     def __init__(self, env_params, sim_params, network, simulator='traci'):
         """Initialize the environment.
         
