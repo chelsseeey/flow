@@ -87,7 +87,8 @@ flow_params = dict(
             'target_velocity': 20,
             'max_accel': 3,
             'max_decel': 3,
-            'sort_vehicles': False
+            'sort_vehicles': False,
+            'collision_penalty': 10  # 이 파라미터를 추가
         },
     ),
 
