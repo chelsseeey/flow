@@ -88,27 +88,42 @@ class AdversarialAccelEnv(AccelEnv, MultiEnv):
 
 
 class MultiAgentAccelPOEnv(MultiEnv):
-    """Multi-agent partially observable acceleration environment."""
+    """Multi-agent partially observable acceleration environment with collision detection."""
 
     def __init__(self, env_params, sim_params, network, simulator='traci'):
-        """Initialize the environment."""
-        for p in ADDITIONAL_ENV_PARAMS.keys():
+        """Initialize the environment.
+        
+        Parameters
+        ----------
+        env_params : flow.core.params.EnvParams
+            환경 파라미터
+        sim_params : flow.core.params.SimParams
+            시뮬레이션 파라미터
+        network : flow.networks.base.Network
+            교통 네트워크
+        simulator : str, optional
+            사용할 시뮬레이터, defaults to 'traci'
+        """
+        required_params = [
+            "max_accel",
+            "max_decel", 
+            "target_velocity",
+            "collision_penalty"
+        ]
+        
+        for p in required_params:
             if p not in env_params.additional_params:
                 raise KeyError(
                     'Environment parameter "{}" not supplied'.format(p))
 
-        # used to store the leader and follower IDs of RL vehicles
         self.leader = []
         self.follower = []
-        
-        # collision monitoring 변수 추가
         self.collision_counts = 0
-
         super().__init__(env_params, sim_params, network, simulator)
 
     @property
     def observation_space(self):
-        """Return the observation space (collision count 포함)."""
+        """Return the observation space."""
         return Box(low=-5, high=5, shape=(7,), dtype=np.float32)
 
     @property
@@ -121,12 +136,17 @@ class MultiAgentAccelPOEnv(MultiEnv):
             dtype=np.float32)
 
     def get_state(self, **kwargs):
-        """Return the state of the simulation."""
+        """Return the state of the simulation.
+        
+        Returns
+        -------
+        numpy.ndarray or dict
+            차량의 상태 정보를 포함하는 observation
+        """
         self.leader = []
         self.follower = []
         obs = {}
 
-        # normalizing constants
         max_speed = self.k.network.max_speed()
         max_length = self.k.network.length()
 
@@ -134,7 +154,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
             this_pos = self.k.vehicle.get_x_by_id(rl_id)
             this_speed = self.k.vehicle.get_speed(rl_id)
 
-            # get leader
+            # 선행 차량 정보
             lead_id = self.k.vehicle.get_leader(rl_id)
             if lead_id in ["", None]:
                 lead_speed = max_speed
@@ -146,7 +166,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
                            - self.k.vehicle.get_x_by_id(rl_id) \
                            - self.k.vehicle.get_length(rl_id)
 
-            # get follower
+            # 후행 차량 정보
             follower = self.k.vehicle.get_follower(rl_id)
             if follower in ["", None]:
                 follow_speed = 0
@@ -156,7 +176,6 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 follow_speed = self.k.vehicle.get_speed(follower)
                 follow_head = self.k.vehicle.get_headway(follower)
 
-            # collision count를 포함한 observation
             obs[rl_id] = np.array([
                 this_pos / max_length,
                 this_speed / max_speed,
@@ -164,55 +183,90 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 lead_head / max_length,
                 (this_speed - follow_speed) / max_speed,
                 follow_head / max_length,
-                self.collision_counts  # collision count 추가
+                self.collision_counts
             ])
 
-        if len(obs) == 1:
-            return list(obs.values())[0]
-        else:
-            return obs
-
-    def _apply_rl_actions(self, rl_actions):
-        """Apply the acceleration actions from the RL agents."""
-        if rl_actions:
-            for rl_id, acceleration in rl_actions.items():
-                self.k.vehicle.apply_acceleration(rl_id, acceleration)
+        return list(obs.values())[0] if len(obs) == 1 else obs
 
     def step(self, rl_actions):
-        """Execute one step of the environment."""
-        # collision check using TraCI
-        collisions = self.k.kernel_api.simulation.getCollisions()
-        if collisions:
-            self.collision_counts += len(collisions)
+        """Execute one step of the environment.
+        
+        Parameters
+        ----------
+        rl_actions : dict
+            각 RL 차량의 가속도 행동
+            
+        Returns
+        -------
+        state : numpy.ndarray or dict
+            새로운 observation
+        rewards : dict
+            각 에이전트의 보상
+        done : bool
+            에피소드 종료 여부
+        info : dict
+            추가 정보
+        """
+        try:
+            colliding_vehicles = self.k.kernel_api.simulation.getCollidingVehiclesIDList()
+            collision_count = self.k.kernel_api.simulation.getCollidingVehiclesNumber()
+            
+            if collision_count > 0:
+                self.collision_counts += collision_count
+        except:
+            # Fallback to headway-based collision detection
+            colliding_vehicles = []
+            for veh_id in self.k.vehicle.get_ids():
+                if self.k.vehicle.get_headway(veh_id) <= 0:
+                    colliding_vehicles.append(veh_id)
+            collision_count = len(colliding_vehicles)
+            if collision_count > 0:
+                self.collision_counts += collision_count
 
         for _ in range(self.env_params.sims_per_step):
             self._apply_rl_actions(rl_actions)
             self.k.simulation.simulation_step()
 
-        # update state, calculate rewards
         states = self.get_state()
-        rewards = self.compute_reward(rl_actions, collisions=len(collisions))
+        rewards = self.compute_reward(rl_actions, collisions=collision_count)
         done = self.check_termination()
         
-        # collision info 추가
         info = {
             'collision_count': self.collision_counts,
-            'new_collisions': len(collisions) if collisions else 0
+            'new_collisions': collision_count,
+            'colliding_vehicles': colliding_vehicles
         }
 
         return states, rewards, done, info
 
+    def _apply_rl_actions(self, rl_actions):
+        """Apply acceleration actions from RL agents."""
+        if rl_actions:
+            for rl_id, acceleration in rl_actions.items():
+                self.k.vehicle.apply_acceleration(rl_id, acceleration)
+
     def compute_reward(self, rl_actions, **kwargs):
-        """Calculate reward with collision penalty."""
+        """Calculate reward with collision penalty.
+        
+        Parameters
+        ----------
+        rl_actions : dict
+            각 RL 차량의 행동
+        **kwargs : dict
+            추가 키워드 인자
+            
+        Returns
+        -------
+        dict
+            각 에이전트의 보상
+        """
         if rl_actions is None:
             return {}
 
-        # 기본 reward 계산
         rewards = {}
         for rl_id in rl_actions.keys():
             reward = rewards.desired_velocity(self, fail=kwargs.get('fail', False))
             
-            # collision penalty 적용
             collision_penalty = self.env_params.additional_params.get('collision_penalty', 10)
             if 'collisions' in kwargs:
                 penalty = kwargs['collisions'] * collision_penalty
@@ -223,18 +277,16 @@ class MultiAgentAccelPOEnv(MultiEnv):
         return rewards
 
     def reset(self):
-        """Reset the environment."""
+        """Reset the environment state."""
         self.collision_counts = 0
         self.leader = []
         self.follower = []
         return super().reset()
 
     def additional_command(self):
-        """See parent class."""
+        """Execute additional commands for each time step."""
         for rl_id in self.k.vehicle.get_rl_ids():
-            # leader
             lead_id = self.k.vehicle.get_leader(rl_id) or rl_id
             self.k.vehicle.set_observed(lead_id)
-            # follower
             follow_id = self.k.vehicle.get_follower(rl_id) or rl_id
             self.k.vehicle.set_observed(follow_id)
