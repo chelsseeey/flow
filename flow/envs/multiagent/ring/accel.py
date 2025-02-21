@@ -246,15 +246,18 @@ class MultiAgentAccelPOEnv(MultiEnv):
 
         states = self.get_state()
         rewards = self.compute_reward(rl_actions, collisions=collision_count)
-        dones = self.check_termination()  # Now returns a dictionary
+        dones = self.check_termination()
         
-        info = {
-            'collision_count': self.collision_counts,
-            'new_collisions': collision_count,
-            'colliding_vehicles': colliding_vehicles
-        }
+        # Create agent-specific info dictionaries
+        infos = {}
+        for rl_id in states.keys():
+            infos[rl_id] = {
+                'collision_count': self.collision_counts,
+                'new_collisions': collision_count,
+                'colliding_vehicles': colliding_vehicles
+            }
 
-        return states, rewards, dones, info
+        return states, rewards, dones, infos
 
     def _apply_rl_actions(self, rl_actions):
         """Apply acceleration actions from RL agents."""
