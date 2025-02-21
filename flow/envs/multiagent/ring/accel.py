@@ -104,7 +104,8 @@ class MultiAgentAccelPOEnv(MultiEnv):
             
         # Check if horizon has been reached
         horizon = self.env_params.horizon
-        if self.k.simulation.step_counter >= horizon:
+        current_step = self.k.kernel_api.simulation.getTime()
+        if current_step >= horizon:
             return True
             
         # Continue simulation otherwise
