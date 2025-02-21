@@ -137,6 +137,26 @@ class MultiAgentAccelPOEnv(MultiEnv):
         simulator : str, optional
             사용할 시뮬레이터, defaults to 'traci'
         """
+
+        import logging
+        
+        # Logger 설정
+        self.logger = logging.getLogger('CollisionMonitor')
+        self.logger.setLevel(logging.INFO)
+        
+        # 콘솔 출력 핸들러
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - Collisions: %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+        
+        # 파일 출력 핸들러
+        fh = logging.FileHandler('collision_log.txt')
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
+
         required_params = [
             "max_accel",
             "max_decel", 
