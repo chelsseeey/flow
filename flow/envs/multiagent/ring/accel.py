@@ -263,18 +263,20 @@ class MultiAgentAccelPOEnv(MultiEnv):
         if rl_actions is None:
             return {}
 
-        rewards = {}
+        rewards_dict = {}
         for rl_id in rl_actions.keys():
+            # Flow의 rewards 모듈 사용
             reward = rewards.desired_velocity(self, fail=kwargs.get('fail', False))
             
+            # 충돌 페널티 적용
             collision_penalty = self.env_params.additional_params.get('collision_penalty', 10)
             if 'collisions' in kwargs:
                 penalty = kwargs['collisions'] * collision_penalty
                 reward = reward - penalty
                 
-            rewards[rl_id] = reward
+            rewards_dict[rl_id] = reward
 
-        return rewards
+        return rewards_dict
 
     def reset(self):
         """Reset the environment state."""
