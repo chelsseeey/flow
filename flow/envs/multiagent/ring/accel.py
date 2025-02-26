@@ -88,80 +88,30 @@ class AdversarialAccelEnv(AccelEnv, MultiEnv):
 
 
 class MultiAgentAccelPOEnv(MultiEnv):
-    """Multi-agent partially observable acceleration environment with collision detection."""
-
-    def check_termination(self):
-        """Check if the simulation should terminate.
-        
-        Returns
-        -------
-        dict
-            각 에이전트의 종료 상태를 포함하는 딕셔너리와 글로벌 done 플래그
-        """
-        # Get all RL vehicle IDs
-        rl_ids = self.k.vehicle.get_rl_ids()
-        
-        # Initialize done dictionary
-        dones = {rl_id: False for rl_id in rl_ids}
-        dones['__all__'] = False  # Global done flag
-        
-        # Terminate if there were any collisions
-        if self.collision_counts > 0:
-            dones['__all__'] = True
-            for rl_id in rl_ids:
-                dones[rl_id] = True
-            return dones
-                
-        # Check if horizon has been reached
-        horizon = self.env_params.horizon
-        current_step = self.k.kernel_api.simulation.getTime()
-        if current_step >= horizon:
-            dones['__all__'] = True
-            for rl_id in rl_ids:
-                dones[rl_id] = True
-            return dones
-        
-        return dones
+    """Multi-agent partially observable acceleration environment with OBB collision detection."""
 
     def __init__(self, env_params, sim_params, network, simulator='traci'):
-        """Initialize the environment.
-        
-        Parameters
-        ----------
-        env_params : flow.core.params.EnvParams
-            환경 파라미터
-        sim_params : flow.core.params.SimParams
-            시뮬레이션 파라미터
-        network : flow.networks.base.Network
-            교통 네트워크
-        simulator : str, optional
-            사용할 시뮬레이터, defaults to 'traci'
-        """
-
+        """Initialize the environment."""
         import logging
         
         # Logger 설정
         self.logger = logging.getLogger('CollisionMonitor')
         self.logger.setLevel(logging.INFO)
         
-        # 콘솔 출력 핸들러
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s - Collisions: %(message)s')
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
         
-        # 파일 출력 핸들러
         fh = logging.FileHandler('collision_log.txt')
         fh.setLevel(logging.INFO)
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
 
         required_params = [
-            "max_accel",
-            "max_decel", 
-            "target_velocity",
-            "collision_penalty"
+            "max_accel", "max_decel", 
+            "target_velocity", "collision_penalty"
         ]
         
         for p in required_params:
@@ -173,6 +123,117 @@ class MultiAgentAccelPOEnv(MultiEnv):
         self.follower = []
         self.collision_counts = 0
         super().__init__(env_params, sim_params, network, simulator)
+
+    def detect_obb_collision(self, veh1, veh2):
+        """OBB 충돌 감지"""
+        # 차량 정보 획득
+        x1, y1 = self.k.vehicle.get_x_by_id(veh1), self.k.vehicle.get_y_by_id(veh1)
+        x2, y2 = self.k.vehicle.get_x_by_id(veh2), self.k.vehicle.get_y_by_id(veh2)
+        angle1 = np.radians(self.k.vehicle.get_angle(veh1))
+        angle2 = np.radians(self.k.vehicle.get_angle(veh2))
+        
+        def get_corners(x, y, length, width, angle):
+            corners = np.array([
+                [-length/2, -width/2],
+                [length/2, -width/2],
+                [length/2, width/2],
+                [-length/2, width/2]
+            ])
+            
+            rotation = np.array([
+                [np.cos(angle), -np.sin(angle)],
+                [np.sin(angle), np.cos(angle)]
+            ])
+            
+            corners = np.dot(corners, rotation.T)
+            corners += np.array([x, y])
+            return corners
+        
+        corners1 = get_corners(x1, y1, 
+                             self.k.vehicle.get_length(veh1),
+                             self.k.vehicle.get_width(veh1), 
+                             angle1)
+        corners2 = get_corners(x2, y2,
+                             self.k.vehicle.get_length(veh2),
+                             self.k.vehicle.get_width(veh2),
+                             angle2)
+        
+        def get_axes(corners):
+            axes = []
+            for i in range(4):
+                p1 = corners[i]
+                p2 = corners[(i + 1) % 4]
+                edge = p2 - p1
+                normal = np.array([-edge[1], edge[0]])
+                axes.append(normal / np.linalg.norm(normal))
+            return axes
+        
+        axes = get_axes(corners1) + get_axes(corners2)
+        for axis in axes:
+            proj1 = [np.dot(corner, axis) for corner in corners1]
+            proj2 = [np.dot(corner, axis) for corner in corners2]
+            
+            min1, max1 = min(proj1), max(proj1)
+            min2, max2 = min(proj2), max(proj2)
+            
+            if max1 < min2 or max2 < min1:
+                return False
+                
+        return True
+
+    def detect_collisions(self):
+        """모든 차량 쌍에 대해 OBB 충돌 감지 수행"""
+        colliding_vehicles = []
+        vehicles = self.k.vehicle.get_ids()
+        
+        for i, veh1 in enumerate(vehicles):
+            for veh2 in vehicles[i+1:]:
+                if self.detect_obb_collision(veh1, veh2):
+                    colliding_vehicles.extend([veh1, veh2])
+                    self.logger.info(f"OBB Collision detected between {veh1} and {veh2}")
+        
+        return list(set(colliding_vehicles))
+
+    def step(self, rl_actions):
+        """Execute one step of the environment."""
+        # OBB 충돌 감지
+        colliding_vehicles = self.detect_collisions()
+        collision_count = len(colliding_vehicles) // 2  # 각 충돌은 2개의 차량을 포함
+        
+        if collision_count > 0:
+            self.collision_counts += collision_count
+            self.logger.info(f"Step collision count: {collision_count}")
+            self.logger.info(f"Total collisions so far: {self.collision_counts}")
+
+        # 환경 스텝 진행
+        for _ in range(self.env_params.sims_per_step):
+            self._apply_rl_actions(rl_actions)
+            self.k.simulation.simulation_step()
+
+        states = self.get_state()
+        rewards = self.compute_reward(rl_actions, collisions=collision_count, colliding_vehicles=colliding_vehicles)
+        dones = super()._check_done()
+        
+        # RL 차량별 충돌 횟수 계산
+        rl_collision_counts = {rl_id: 0 for rl_id in self.k.vehicle.get_rl_ids()}
+        for i in range(0, len(colliding_vehicles), 2):
+            veh1, veh2 = colliding_vehicles[i:i+2]
+            if veh1 in rl_collision_counts:
+                rl_collision_counts[veh1] += 1
+            if veh2 in rl_collision_counts:
+                rl_collision_counts[veh2] += 1
+        
+        # 정보 업데이트
+        infos = {}
+        for rl_id in states.keys():
+            infos[rl_id] = {
+                'total_collision_count': self.collision_counts,
+                'new_collisions': collision_count,
+                'vehicle_collision_count': rl_collision_counts[rl_id],  # 개별 차량의 충돌 수
+                'colliding_vehicles': colliding_vehicles
+            }
+
+        return states, rewards, dones, infos
 
     @property
     def observation_space(self):
@@ -242,43 +303,6 @@ class MultiAgentAccelPOEnv(MultiEnv):
         # 항상 딕셔너리 형태로 반환
         return obs
 
-    def step(self, rl_actions):
-        """Execute one step of the environment."""
-        try:
-            colliding_vehicles = self.k.kernel_api.simulation.getCollidingVehiclesIDList()
-            collision_count = self.k.kernel_api.simulation.getCollidingVehiclesNumber()
-            
-            if collision_count > 0:
-                self.collision_counts += collision_count
-        except:
-            # Fallback to headway-based collision detection
-            colliding_vehicles = []
-            for veh_id in self.k.vehicle.get_ids():
-                if self.k.vehicle.get_headway(veh_id) <= 0:
-                    colliding_vehicles.append(veh_id)
-            collision_count = len(colliding_vehicles)
-            if collision_count > 0:
-                self.collision_counts += collision_count
-
-        for _ in range(self.env_params.sims_per_step):
-            self._apply_rl_actions(rl_actions)
-            self.k.simulation.simulation_step()
-
-        states = self.get_state()
-        rewards = self.compute_reward(rl_actions, collisions=collision_count)
-        dones = self.check_termination()
-        
-        # Create agent-specific info dictionaries
-        infos = {}
-        for rl_id in states.keys():
-            infos[rl_id] = {
-                'collision_count': self.collision_counts,
-                'new_collisions': collision_count,
-                'colliding_vehicles': colliding_vehicles
-            }
-
-        return states, rewards, dones, infos
-
     def _apply_rl_actions(self, rl_actions):
         """Apply acceleration actions from RL agents."""
         if rl_actions:
@@ -286,34 +310,33 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 self.k.vehicle.apply_acceleration(rl_id, acceleration)
 
     def compute_reward(self, rl_actions, **kwargs):
-        """Calculate reward with collision penalty.
-        
-        Parameters
-        ----------
-        rl_actions : dict
-            각 RL 차량의 행동
-        **kwargs : dict
-            추가 키워드 인자
-            
-        Returns
-        -------
-        dict
-            각 에이전트의 보상
-        """
+        """Calculate reward with individual collision penalties."""
         if rl_actions is None:
             return {}
 
+        # colliding_pairs로부터 각 RL 차량의 충돌 횟수 계산
+        rl_collision_counts = {rl_id: 0 for rl_id in rl_actions.keys()}
+        colliding_vehicles = kwargs.get('colliding_vehicles', [])
+        
+        # 각 충돌 쌍 확인
+        for i in range(0, len(colliding_vehicles), 2):
+            veh1, veh2 = colliding_vehicles[i:i+2]
+            # RL 차량이 포함된 충돌만 카운트
+            if veh1 in rl_collision_counts:
+                rl_collision_counts[veh1] += 1
+            if veh2 in rl_collision_counts:
+                rl_collision_counts[veh2] += 1
+
         rewards_dict = {}
         for rl_id in rl_actions.keys():
-            # Flow의 rewards 모듈 사용
+            # 기본 속도 보상
             reward = rewards.desired_velocity(self, fail=kwargs.get('fail', False))
             
-            # 충돌 페널티 적용
+            # 개별 충돌 페널티 적용
             collision_penalty = self.env_params.additional_params.get('collision_penalty', 10)
-            if 'collisions' in kwargs:
-                penalty = kwargs['collisions'] * collision_penalty
-                reward = reward - penalty
-                
+            penalty = rl_collision_counts[rl_id] * collision_penalty
+            reward = reward - penalty
+            
             rewards_dict[rl_id] = reward
 
         return rewards_dict
