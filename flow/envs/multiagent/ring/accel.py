@@ -126,60 +126,67 @@ class MultiAgentAccelPOEnv(MultiEnv):
 
     def detect_obb_collision(self, veh1, veh2):
         """OBB 충돌 감지"""
-        # 차량 정보 획득
-        x1, y1 = self.k.vehicle.get_x_by_id(veh1), self.k.vehicle.get_y_by_id(veh1)
-        x2, y2 = self.k.vehicle.get_x_by_id(veh2), self.k.vehicle.get_y_by_id(veh2)
-        angle1 = np.radians(self.k.vehicle.get_angle(veh1))
-        angle2 = np.radians(self.k.vehicle.get_angle(veh2))
-        
-        def get_corners(x, y, length, width, angle):
-            corners = np.array([
-                [-length/2, -width/2],
-                [length/2, -width/2],
-                [length/2, width/2],
-                [-length/2, width/2]
-            ])
+        try:
+            # 차량 정보 획득 (x, y 좌표를 getPosition으로 얻기)
+            pos1 = self.k.vehicle.get_position(veh1)  # (x, y) tuple 반환
+            pos2 = self.k.vehicle.get_position(veh2)
+            x1, y1 = pos1
+            x2, y2 = pos2
             
-            rotation = np.array([
-                [np.cos(angle), -np.sin(angle)],
-                [np.sin(angle), np.cos(angle)]
-            ])
+            angle1 = np.radians(self.k.vehicle.get_angle(veh1))
+            angle2 = np.radians(self.k.vehicle.get_angle(veh2))
             
-            corners = np.dot(corners, rotation.T)
-            corners += np.array([x, y])
-            return corners
-        
-        corners1 = get_corners(x1, y1, 
-                             self.k.vehicle.get_length(veh1),
-                             self.k.vehicle.get_width(veh1), 
-                             angle1)
-        corners2 = get_corners(x2, y2,
-                             self.k.vehicle.get_length(veh2),
-                             self.k.vehicle.get_width(veh2),
-                             angle2)
-        
-        def get_axes(corners):
-            axes = []
-            for i in range(4):
-                p1 = corners[i]
-                p2 = corners[(i + 1) % 4]
-                edge = p2 - p1
-                normal = np.array([-edge[1], edge[0]])
-                axes.append(normal / np.linalg.norm(normal))
-            return axes
-        
-        axes = get_axes(corners1) + get_axes(corners2)
-        for axis in axes:
-            proj1 = [np.dot(corner, axis) for corner in corners1]
-            proj2 = [np.dot(corner, axis) for corner in corners2]
-            
-            min1, max1 = min(proj1), max(proj1)
-            min2, max2 = min(proj2), max(proj2)
-            
-            if max1 < min2 or max2 < min1:
-                return False
+            def get_corners(x, y, length, width, angle):
+                corners = np.array([
+                    [-length/2, -width/2],
+                    [length/2, -width/2],
+                    [length/2, width/2],
+                    [-length/2, width/2]
+                ])
                 
-        return True
+                rotation = np.array([
+                    [np.cos(angle), -np.sin(angle)],
+                    [np.sin(angle), np.cos(angle)]
+                ])
+                
+                corners = np.dot(corners, rotation.T)
+                corners += np.array([x, y])
+                return corners
+            
+            corners1 = get_corners(x1, y1, 
+                                self.k.vehicle.get_length(veh1),
+                                self.k.vehicle.get_width(veh1), 
+                                angle1)
+            corners2 = get_corners(x2, y2,
+                                self.k.vehicle.get_length(veh2),
+                                self.k.vehicle.get_width(veh2),
+                                angle2)
+            
+            def get_axes(corners):
+                axes = []
+                for i in range(4):
+                    p1 = corners[i]
+                    p2 = corners[(i + 1) % 4]
+                    edge = p2 - p1
+                    normal = np.array([-edge[1], edge[0]])
+                    axes.append(normal / np.linalg.norm(normal))
+                return axes
+            
+            axes = get_axes(corners1) + get_axes(corners2)
+            for axis in axes:
+                proj1 = [np.dot(corner, axis) for corner in corners1]
+                proj2 = [np.dot(corner, axis) for corner in corners2]
+                
+                min1, max1 = min(proj1), max(proj1)
+                min2, max2 = min(proj2), max(proj2)
+                
+                if max1 < min2 or max2 < min1:
+                    return False
+                    
+            return True
+        except Exception as e:
+            self.logger.error(f"Error in detect_obb_collision: {e}")
+            return False
 
     def detect_collisions(self):
         """모든 차량 쌍에 대해 OBB 충돌 감지 수행"""
