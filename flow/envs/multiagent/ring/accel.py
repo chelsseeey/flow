@@ -206,7 +206,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
         """Execute one step of the environment."""
         # OBB 충돌 감지
         colliding_vehicles = self.detect_collisions()
-        collision_count = len(colliding_vehicles) // 2  # 각 충돌은 2개의 차량을 포함
+        collision_count = len(colliding_vehicles) // 2
         
         if collision_count > 0:
             self.collision_counts += collision_count
@@ -219,8 +219,11 @@ class MultiAgentAccelPOEnv(MultiEnv):
             self.k.simulation.simulation_step()
 
         states = self.get_state()
-        rewards = self.compute_reward(rl_actions, collisions=collision_count, colliding_vehicles=colliding_vehicles)
-        dones = super()._check_done()
+        rewards = self.compute_reward(rl_actions, collisions=collision_count, 
+                                    colliding_vehicles=colliding_vehicles)
+        
+        # 충돌해도 계속 진행
+        dones = {key: False for key in states.keys()}
         
         # RL 차량별 충돌 횟수 계산
         rl_collision_counts = {rl_id: 0 for rl_id in self.k.vehicle.get_rl_ids()}
