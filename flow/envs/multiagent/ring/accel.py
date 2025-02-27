@@ -134,9 +134,15 @@ class MultiAgentAccelPOEnv(MultiEnv):
             x1, y1 = pos1
             x2, y2 = pos2
             
-            # angle 획득 방법 수정
+            # angle 획득
             angle1 = np.radians(self.k.kernel_api.vehicle.getAngle(veh1))
             angle2 = np.radians(self.k.kernel_api.vehicle.getAngle(veh2))
+            
+            # 차량 크기 정보 획득 - TraCI API 사용
+            length1 = self.k.kernel_api.vehicle.getLength(veh1)
+            width1 = self.k.kernel_api.vehicle.getWidth(veh1)
+            length2 = self.k.kernel_api.vehicle.getLength(veh2)
+            width2 = self.k.kernel_api.vehicle.getWidth(veh2)
             
             def get_corners(x, y, length, width, angle):
                 corners = np.array([
@@ -154,15 +160,9 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 corners = np.dot(corners, rotation.T)
                 corners += np.array([x, y])
                 return corners
-            
-            corners1 = get_corners(x1, y1, 
-                                self.k.vehicle.get_length(veh1),
-                                self.k.vehicle.get_width(veh1), 
-                                angle1)
-            corners2 = get_corners(x2, y2,
-                                self.k.vehicle.get_length(veh2),
-                                self.k.vehicle.get_width(veh2),
-                                angle2)
+                
+            corners1 = get_corners(x1, y1, length1, width1, angle1)
+            corners2 = get_corners(x2, y2, length2, width2, angle2)
             
             def get_axes(corners):
                 axes = []
