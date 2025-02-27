@@ -383,7 +383,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
             collision_reward = -rl_collision_counts[rl_id] * collision_penalty
             
             # 3. 최종 reward 계산 (교차로 reward 70% + 충돌 패널티 30%)
-            final_reward = 0.7 * intersection_reward + 0.3 * collision_reward
+            final_reward = 0.9 * intersection_reward + 0.1 * collision_reward
             
             rewards_dict[rl_id] = final_reward
 
