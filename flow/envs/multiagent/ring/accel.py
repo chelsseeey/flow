@@ -223,8 +223,11 @@ class MultiAgentAccelPOEnv(MultiEnv):
         rewards = self.compute_reward(rl_actions, collisions=collision_count, 
                                     colliding_vehicles=colliding_vehicles)
         
-        # 충돌해도 계속 진행
-        dones = {key: False for key in states.keys()}
+        # 충돌해도 계속 진행하며, __all__ 키 추가
+        dones = {
+            key: False for key in states.keys()
+        }
+        dones['__all__'] = False  # 전체 에피소드 종료 여부
         
         # RL 차량별 충돌 횟수 계산
         rl_collision_counts = {rl_id: 0 for rl_id in self.k.vehicle.get_rl_ids()}
@@ -241,7 +244,7 @@ class MultiAgentAccelPOEnv(MultiEnv):
             infos[rl_id] = {
                 'total_collision_count': self.collision_counts,
                 'new_collisions': collision_count,
-                'vehicle_collision_count': rl_collision_counts[rl_id],  # 개별 차량의 충돌 수
+                'vehicle_collision_count': rl_collision_counts[rl_id],
                 'colliding_vehicles': colliding_vehicles
             }
 
