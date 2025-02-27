@@ -274,6 +274,17 @@ class MultiAgentAccelPOEnv(MultiEnv):
         for rl_id in self.k.vehicle.get_rl_ids():
             this_pos = self.k.vehicle.get_x_by_id(rl_id)
             this_speed = self.k.vehicle.get_speed(rl_id)
+            
+            # 교차로 감지 로직 개선
+            current_edge = self.k.vehicle.get_edge(rl_id)
+            if ':center' in str(current_edge):  # 교차로 진입 확인
+                pos = self.k.vehicle.get_position(rl_id)
+                self.logger.info(
+                    f"Vehicle {rl_id} at intersection - "
+                    f"Position: ({pos[0]:.2f}, {pos[1]:.2f}), "
+                    f"Speed: {this_speed:.2f} m/s, "
+                    f"Edge: {current_edge}"
+                )
 
             # 선행 차량 정보
             lead_id = self.k.vehicle.get_leader(rl_id)
@@ -317,34 +328,56 @@ class MultiAgentAccelPOEnv(MultiEnv):
                 self.k.vehicle.apply_acceleration(rl_id, acceleration)
 
     def compute_reward(self, rl_actions, **kwargs):
-        """Calculate reward with individual collision penalties."""
+        """Calculate reward focusing on target velocity in intersections."""
         if rl_actions is None:
             return {}
 
-        # colliding_pairs로부터 각 RL 차량의 충돌 횟수 계산
+        # 기본 파라미터 설정
+        rewards_dict = {}
+        target_vel = self.env_params.additional_params['target_velocity']
+        
+        # 충돌 정보 획득
         rl_collision_counts = {rl_id: 0 for rl_id in rl_actions.keys()}
         colliding_vehicles = kwargs.get('colliding_vehicles', [])
         
-        # 각 충돌 쌍 확인
+        # 충돌 카운트 업데이트
         for i in range(0, len(colliding_vehicles), 2):
             veh1, veh2 = colliding_vehicles[i:i+2]
-            # RL 차량이 포함된 충돌만 카운트
             if veh1 in rl_collision_counts:
                 rl_collision_counts[veh1] += 1
             if veh2 in rl_collision_counts:
                 rl_collision_counts[veh2] += 1
 
-        rewards_dict = {}
         for rl_id in rl_actions.keys():
-            # 기본 속도 보상
-            reward = rewards.desired_velocity(self, fail=kwargs.get('fail', False))
+            current_edge = self.k.vehicle.get_edge(rl_id)
+            current_speed = self.k.vehicle.get_speed(rl_id)
             
-            # 개별 충돌 페널티 적용
+            # 1. 교차로 구간 reward 계산
+            intersection_reward = 0
+            if ':center' in str(current_edge):  # 교차로 구간
+                # target_velocity와의 차이에 기반한 reward
+                speed_diff = abs(current_speed - target_vel)
+                intersection_reward = 1.0 * (1 - speed_diff / target_vel)
+                
+                # 로깅
+                self.logger.info(
+                    f"Intersection - Vehicle {rl_id}: "
+                    f"Speed={current_speed:.2f}, "
+                    f"Target={target_vel:.2f}, "
+                    f"Reward={intersection_reward:.2f}"
+                )
+            else:
+                # 일반 도로 구간에서는 0 reward
+                intersection_reward = 0
+            
+            # 2. 충돌 패널티 계산
             collision_penalty = self.env_params.additional_params.get('collision_penalty', 10)
-            penalty = rl_collision_counts[rl_id] * collision_penalty
-            reward = reward - penalty
+            collision_reward = -rl_collision_counts[rl_id] * collision_penalty
             
-            rewards_dict[rl_id] = reward
+            # 3. 최종 reward 계산 (교차로 reward 70% + 충돌 패널티 30%)
+            final_reward = 0.7 * intersection_reward + 0.3 * collision_reward
+            
+            rewards_dict[rl_id] = final_reward
 
         return rewards_dict
 
