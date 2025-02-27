@@ -128,14 +128,15 @@ class MultiAgentAccelPOEnv(MultiEnv):
         """OBB 충돌 감지"""
         try:
             # 차량 위치 획득
-            pos1 = self.k.vehicle.get_2d_position(veh1)  # SUMO/Flow API 메소드
-            pos2 = self.k.vehicle.get_2d_position(veh2)  # (x, y) 튜플 반환
+            pos1 = self.k.vehicle.get_2d_position(veh1)
+            pos2 = self.k.vehicle.get_2d_position(veh2)
             
-            x1, y1 = pos1  # 튜플 언패킹
+            x1, y1 = pos1
             x2, y2 = pos2
             
-            angle1 = np.radians(self.k.vehicle.get_angle(veh1))
-            angle2 = np.radians(self.k.vehicle.get_angle(veh2))
+            # angle 획득 방법 수정
+            angle1 = np.radians(self.k.kernel_api.vehicle.getAngle(veh1))
+            angle2 = np.radians(self.k.kernel_api.vehicle.getAngle(veh2))
             
             def get_corners(x, y, length, width, angle):
                 corners = np.array([
