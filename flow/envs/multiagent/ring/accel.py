@@ -127,11 +127,12 @@ class MultiAgentAccelPOEnv(MultiEnv):
     def detect_obb_collision(self, veh1, veh2):
         """OBB 충돌 감지"""
         try:
-            # x, y 좌표 직접 획득
-            x1 = self.k.vehicle.get_x_by_id(veh1)
-            y1 = self.k.vehicle.get_y_by_id(veh1)
-            x2 = self.k.vehicle.get_x_by_id(veh2)
-            y2 = self.k.vehicle.get_y_by_id(veh2)
+            # 차량 위치 획득
+            pos1 = self.k.vehicle.get_2d_position(veh1)  # SUMO/Flow API 메소드
+            pos2 = self.k.vehicle.get_2d_position(veh2)  # (x, y) 튜플 반환
+            
+            x1, y1 = pos1  # 튜플 언패킹
+            x2, y2 = pos2
             
             angle1 = np.radians(self.k.vehicle.get_angle(veh1))
             angle2 = np.radians(self.k.vehicle.get_angle(veh2))
